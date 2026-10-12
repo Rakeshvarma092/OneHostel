@@ -1,0 +1,199 @@
+<div class="login-page">
+  <!-- ===== Left: brand panel ===== -->
+  <section class="login-brand">
+    <div class="login-brand__bg-pattern" aria-hidden="true"></div>
+    <div class="login-brand__glow login-brand__glow--a" aria-hidden="true"></div>
+    <div class="login-brand__glow login-brand__glow--b" aria-hidden="true"></div>
+    <div class="login-brand__ring" aria-hidden="true"></div>
+
+    <div class="login-brand__content">
+      <!-- Logo (unchanged) -->
+      <div class="login-brand__logo">
+        <div class="login-brand__logo-box">
+          <mat-icon class="logo-grid-icon">grid_view</mat-icon>
+        </div>
+        <span class="login-brand__logo-text">ONEHOSTEL</span>
+      </div>
+
+      <div class="login-brand__main">
+        <span class="login-brand__eyebrow">
+          <span class="login-brand__eyebrow-dot" aria-hidden="true"></span>
+          SuperAdmin Console
+        </span>
+
+        <h1 class="login-brand__tagline">
+          Run every hostel,<br />
+          <span class="login-brand__tagline-highlight">from one place.</span>
+        </h1>
+        <p class="login-brand__subtitle">
+          Centralized management for seamless hostel operations and happy residents.
+        </p>
+
+        <!-- Stats strip -->
+        <div class="login-brand__stats">
+          <div class="login-brand__stat">
+            <span class="login-brand__stat-icon login-brand__stat-icon--blue"><mat-icon fontSet="material-icons-outlined">apartment</mat-icon></span>
+            <div>
+              <span class="login-brand__stat-value">128+</span>
+              <span class="login-brand__stat-label">Hostels</span>
+            </div>
+          </div>
+          <div class="login-brand__stat">
+            <span class="login-brand__stat-icon login-brand__stat-icon--purple"><mat-icon fontSet="material-icons-outlined">group</mat-icon></span>
+            <div>
+              <span class="login-brand__stat-value">12.4k+</span>
+              <span class="login-brand__stat-label">Residents</span>
+            </div>
+          </div>
+          <div class="login-brand__stat">
+            <span class="login-brand__stat-icon login-brand__stat-icon--green"><mat-icon fontSet="material-icons-outlined">speed</mat-icon></span>
+            <div>
+              <span class="login-brand__stat-value">99.9%</span>
+              <span class="login-brand__stat-label">Uptime</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features -->
+        <ul class="login-brand__features">
+          <li class="login-brand__feature">
+            <span class="login-brand__feature-icon login-brand__feature-icon--blue"><mat-icon fontSet="material-icons-outlined">apartment</mat-icon></span>
+            <div>
+              <h3>Manage Hostels</h3>
+              <p>Add, update and oversee all your hostels efficiently.</p>
+            </div>
+          </li>
+          <li class="login-brand__feature">
+            <span class="login-brand__feature-icon login-brand__feature-icon--purple"><mat-icon fontSet="material-icons-outlined">group</mat-icon></span>
+            <div>
+              <h3>Manage Users</h3>
+              <p>Control user access and roles across your organization.</p>
+            </div>
+          </li>
+          <li class="login-brand__feature login-brand__feature--wide">
+            <span class="login-brand__feature-icon login-brand__feature-icon--green"><mat-icon fontSet="material-icons-outlined">credit_card</mat-icon></span>
+            <div>
+              <h3>Manage Subscriptions</h3>
+              <p>Track plans and renewals for every hostel you run.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="login-brand__footer">
+        <span class="login-brand__trust">
+          <mat-icon fontSet="material-icons-outlined">verified_user</mat-icon>
+          Trusted by <strong>128+</strong> hostels
+        </span>
+        <span class="login-brand__footer-note">Secure · Reliable · Scalable</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Right: sign-in card ===== -->
+  <section class="login-panel">
+    <mat-card class="login-card" [class.login-card--shake]="loginFailed">
+      <div class="login-card__logo">
+        <div class="login-card__logo-box">
+          <mat-icon>grid_view</mat-icon>
+        </div>
+        <span class="login-card__logo-text">ONEHOSTEL</span>
+      </div>
+
+      <div class="login-card__header">
+        <h2 class="login-card__title">Let's Get Started.</h2>
+        <p class="login-card__subtitle">Welcome back! Sign in to manage your hostels, users and subscriptions.</p>
+      </div>
+
+      <div class="login-box">
+        <button type="button" class="login-box__demo" (click)="fillDemoCredentials()">
+          <mat-icon>rocket_launch</mat-icon>
+          <span>Use <strong>demo credentials</strong></span>
+        </button>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-form">
+          <!-- Username -->
+          <div class="login-form__field">
+            <label class="login-form__label" for="login-username">Username</label>
+            <mat-form-field appearance="outline" class="full-width custom-outline-field">
+              <mat-icon matPrefix class="login-field-icon">person_outline</mat-icon>
+              <input
+                id="login-username"
+                matInput
+                type="text"
+                placeholder="Enter your username"
+                formControlName="username"
+                autocomplete="username"
+                required
+              />
+            </mat-form-field>
+            <app-form-error [control]="form.get('username')" label="Username"></app-form-error>
+          </div>
+
+          <!-- Password -->
+          <div class="login-form__field">
+            <label class="login-form__label" for="login-password">Password</label>
+            <mat-form-field appearance="outline" class="full-width custom-outline-field">
+              <mat-icon matPrefix class="login-field-icon">lock_outline</mat-icon>
+              <input
+                #passwordInput
+                id="login-password"
+                matInput
+                [type]="hidePassword ? 'password' : 'text'"
+                placeholder="Enter your password"
+                formControlName="password"
+                autocomplete="current-password"
+                required
+                (keyup)="onPasswordKeyEvent($event)"
+                (keydown)="onPasswordKeyEvent($event)"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+                [attr.aria-pressed]="!hidePassword"
+                class="eye-icon-button"
+                [class.eye-icon-button--active]="!hidePassword"
+              >
+                <mat-icon class="eye-icon">{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+            @if (capsLockOn) {
+              <p class="login-form__caps-warning" role="alert">
+                <mat-icon>info</mat-icon>
+                Caps Lock is on
+              </p>
+            }
+            <app-form-error [control]="form.get('password')" label="Password"></app-form-error>
+          </div>
+
+          <div class="login-form__row">
+            <a href="#" class="login-form__forgot" (click)="onForgotPassword($event)">Forgot Password?</a>
+          </div>
+
+          <app-button
+            variant="primary"
+            type="submit"
+            [disabled]="form.invalid"
+            [loading]="loading"
+            class="login-form__submit-btn"
+          >
+            Login
+          </app-button>
+
+          <p class="login-form__secure-note">
+            <span class="login-form__secure-tag"><mat-icon>verified_user</mat-icon> Secure Connection</span>
+            <span>Your connection is encrypted and secure.</span>
+          </p>
+        </form>
+      </div>
+
+      <div class="login-card__footer">
+        <span class="login-card__footer-caption">Powered by</span>
+        <strong class="login-card__footer-name">RV</strong>
+      </div>
+    </mat-card>
+  </section>
+</div>

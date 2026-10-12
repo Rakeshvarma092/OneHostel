@@ -1,0 +1,29 @@
+<aside class="sidebar" [class.sidebar--collapsed]="collapsed">
+  <div class="sidebar__brand">
+    <div class="sidebar__logo-box">
+      <mat-icon class="logo-icon">grid_view</mat-icon>
+    </div>
+    <span *ngIf="!collapsed" class="sidebar__brand-name">ONEHOSTEL</span>
+  </div>
+
+  <nav class="sidebar__nav">
+    <div *ngFor="let section of navSections" class="sidebar__section">
+      <div *ngIf="section.sectionTitle && !collapsed" class="sidebar__section-title">{{ section.sectionTitle }}</div>
+
+      <div class="sidebar__menu-list">
+        <a
+          *ngFor="let item of section.items"
+          [routerLink]="item.route"
+          routerLinkActive="sidebar__link--active"
+          class="sidebar__link"
+          [matTooltip]="collapsed ? item.label : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon class="sidebar__link-icon">{{ item.icon }}</mat-icon>
+          <span *ngIf="!collapsed" class="sidebar__link-text">{{ item.label }}</span>
+          <mat-icon *ngIf="item.hasSubmenu && !collapsed" class="sidebar__link-chevron">keyboard_arrow_down</mat-icon>
+        </a>
+      </div>
+    </div>
+  </nav>
+</aside>

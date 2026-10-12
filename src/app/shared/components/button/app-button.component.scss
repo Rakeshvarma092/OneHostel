@@ -1,0 +1,20 @@
+:host {
+  display: inline-block;
+}
+
+.app-button__icon--left {
+  margin-right: 6px;
+}
+
+.app-button__icon--right {
+  margin-left: 6px;
+}
+
+.app-button__spinner {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.app-button__spinner--left {
+  margin-right: 8px;
+}

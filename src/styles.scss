@@ -1,0 +1,88 @@
+@use 'styles/theme';
+@use 'styles/colors';
+@use 'styles/typography';
+@use 'styles/filters';
+@use 'styles/table';
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  background: var(--color-surface-alt);
+  color: var(--color-text-primary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// Side panels (plans, admins, payments, audit logs, …) render a full-screen
+// `.panel-backdrop` inside the page content. Material stacks the content
+// (z-index 1) below the sidebar drawer (z-index 4), so the backdrop couldn't
+// cover the left menu and it stayed clickable. While any backdrop is present,
+// lift the content above the drawer so the backdrop dims and blocks the sidebar too.
+.mat-drawer-content:has(.panel-backdrop) {
+  z-index: 10 !important;
+}
+
+// Hide scrollbars everywhere in the app while keeping every element fully
+// scrollable (wheel, touch, keyboard, drag) — visuals only, no behavior change.
+* {
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // legacy Edge / IE
+}
+
+*::-webkit-scrollbar {
+  display: none; // Chrome, Safari, modern Edge, Opera
+  width: 0;
+  height: 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Wraps a <mat-form-field> + its <app-form-error> sibling so grid/flex
+// layouts treat the field+error pair as a single item (see AppFormErrorComponent).
+.field-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+// Snackbar variants — pass via MatSnackBarConfig.panelClass.
+.app-snackbar--error {
+  --mdc-snackbar-container-color: var(--color-danger);
+  --mdc-snackbar-supporting-text-color: white;
+}
+
+.app-snackbar--success, .green-snackbar {
+  --mdc-snackbar-container-color: #38c172;
+  --mdc-snackbar-supporting-text-color: #ffffff;
+  --mat-mdc-snack-bar-button-color: #ffffff;
+
+  .mdc-snackbar__surface {
+    background-color: #38c172 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    padding: 2px 8px !important;
+  }
+
+  .mdc-snackbar__label {
+    color: #ffffff !important;
+    font-size: 14.5px !important;
+    font-weight: 500 !important;
+  }
+
+  .mat-mdc-snack-bar-action {
+    color: #ffffff !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    min-width: 32px !important;
+    text-transform: lowercase !important;
+  }
+}
+

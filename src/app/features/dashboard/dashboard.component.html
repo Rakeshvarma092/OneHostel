@@ -1,0 +1,158 @@
+<div class="dashboard">
+  <!-- Filters -->
+  <div class="dash-card filter-bar">
+    <mat-form-field appearance="outline" class="filter-field filter-field--date">
+      <mat-date-range-input [rangePicker]="picker">
+        <input matStartDate placeholder="From" [(ngModel)]="dateFrom" />
+        <input matEndDate placeholder="To" [(ngModel)]="dateTo" />
+      </mat-date-range-input>
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-date-range-picker #picker></mat-date-range-picker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(ngModel)]="hostelFilter" aria-label="Hostel">
+        <mat-option value="All">All Hostels</mat-option>
+        @for (h of hostelNames; track h) {
+          <mat-option [value]="h">{{ h }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(ngModel)]="typeFilter" aria-label="Hostel type">
+        <mat-option value="All">All Hostel Types</mat-option>
+        @for (t of hostelTypes; track t) {
+          <mat-option [value]="t">{{ t }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(ngModel)]="planFilter" aria-label="Subscription plan">
+        <mat-option value="All">All Plans</mat-option>
+        @for (p of plans; track p) {
+          <mat-option [value]="p">{{ p }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-select [(ngModel)]="statusFilter" aria-label="Hostel status">
+        <mat-option value="All">All Statuses</mat-option>
+        @for (s of statuses; track s) {
+          <mat-option [value]="s">{{ s }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (hasFilters) {
+      <button type="button" class="filter-reset" (click)="resetFilters()">
+        <mat-icon>restart_alt</mat-icon> Reset
+      </button>
+    }
+  </div>
+
+  <!-- Summary cards -->
+  @for (group of groups; track group.title) {
+    <section class="card-group" [attr.aria-label]="group.title">
+      <div class="card-group__head">
+        <h2 class="card-group__title">{{ group.title }}</h2>
+        <span class="card-group__scope">
+          @if (group.scope === 'today') {
+            As of today
+          } @else if (hasDateRange) {
+            Revenue &amp; pending for {{ dateFrom ? (dateFrom | date: 'dd-MMM-yy') : 'start' }} – {{ dateTo ? (dateTo | date: 'dd-MMM-yy') : 'today' }}
+          } @else {
+            Revenue &amp; pending: all time
+          }
+        </span>
+      </div>
+      <div class="stat-grid">
+        @for (card of group.cards; track card.label) {
+          <a class="stat-card" [routerLink]="card.route" [queryParams]="card.queryParams">
+            <div class="stat-card__top">
+              <span class="stat-card__label">{{ card.label }}</span>
+              <span class="stat-card__icon"><mat-icon>{{ card.icon }}</mat-icon></span>
+            </div>
+            <div class="stat-card__value">
+              {{ card.format === 'inr' ? (card.value | inrCurrency) : (card.value | number) }}
+            </div>
+            <div class="stat-card__sub">{{ card.sub }}</div>
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Activity + attention -->
+  <div class="dash-row">
+    <div class="dash-card activity-card">
+      <div class="dash-card__header">
+        <h2 class="dash-card__title">Recent Activity</h2>
+        <a routerLink="/audit-logs" class="view-all">View all <mat-icon>arrow_forward</mat-icon></a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Date &amp; Time</th>
+              <th>Activity</th>
+              <th>Hostel</th>
+              <th>Performed By</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of recentActivity; track $index) {
+              <tr [matTooltip]="row.details ?? ''" matTooltipPosition="above">
+                <td class="nowrap">{{ row.timestamp | date: 'dd-MMM-yy HH:mm' }}</td>
+                <td class="font-medium">{{ row.activity }}</td>
+                <td [class.muted]="row.hostel === '—'">{{ row.hostel }}</td>
+                <td>{{ row.user }}</td>
+                <td>
+                  <span class="badge-status" [class.badge-status--active]="row.status === 'Success'" [class.badge-status--blocked]="row.status === 'Failed'">
+                    {{ row.status }}
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-cell">No activity for the selected filters</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dash-card attention-card">
+      <div class="dash-card__header">
+        <h2 class="dash-card__title">Needs Attention</h2>
+        @if (attention.length) {
+          <span class="count-pill">{{ attention.length }}</span>
+        }
+      </div>
+
+      @if (attention.length) {
+        <ul class="attention-list">
+          @for (item of attention; track item.text) {
+            <li>
+              <a class="attention-item" [routerLink]="item.route" [queryParams]="item.queryParams">
+                <span class="attention-item__icon attention-item__icon--{{ item.tone }}"><mat-icon>{{ item.icon }}</mat-icon></span>
+                <span class="attention-item__text">{{ item.text }}</span>
+                <mat-icon class="attention-item__chev">chevron_right</mat-icon>
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="all-clear">
+          <mat-icon>task_alt</mat-icon>
+          <span>All clear — nothing needs your attention.</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

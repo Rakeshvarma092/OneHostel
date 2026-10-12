@@ -1,0 +1,117 @@
+// =============================================================================
+// GLOBAL COLOR SYSTEM
+// Single source of truth for every color used in the app.
+// 1. Material palettes  -> feed the Angular Material theme (_theme.scss)
+// 2. CSS custom props    -> used directly in component styles / non-Material UI
+// Change a brand color ONLY here — never hardcode hex values in components.
+// =============================================================================
+
+// ---- 1. Material palette maps (M2 palette shape: 50-900 + A100/A200/A400/A700) ----
+$one-hostel-primary-palette: (
+  50: #e8eef9,
+  100: #c5d5f0,
+  200: #9fb9e6,
+  300: #789ddc,
+  400: #5b88d4,
+  500: #3f73cd,
+  600: #396bc8,
+  700: #3160c1,
+  800: #2956ba,
+  900: #1c43ad,
+  A100: #c9d9ff,
+  A200: #96b4ff,
+  A400: #638fff,
+  A700: #497cff,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: white,
+    A700: white,
+  ),
+);
+
+$one-hostel-accent-palette: (
+  50: #fdf1e7,
+  100: #fadbc2,
+  200: #f7c398,
+  300: #f3aa6d,
+  400: #f0974d,
+  500: #ee852d,
+  600: #e97a28,
+  700: #e26c22,
+  800: #db5f1c,
+  900: #cf4a11,
+  A100: #ffe3d1,
+  A200: #ffbf9e,
+  A400: #ff9a6b,
+  A700: #ff8751,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: rgba(black, 0.87),
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: rgba(black, 0.87),
+    A700: white,
+  ),
+);
+
+// ---- 2. CSS custom properties (used across the app, incl. non-Material markup) ----
+:root {
+  // Brand
+  --color-primary: #3f73cd;
+  --color-primary-dark: #2956ba;
+  --color-primary-light: #9fb9e6;
+  --color-accent: #ee852d;
+  --color-accent-dark: #db5f1c;
+
+  // Semantic / status
+  --color-success: #2e7d32;
+  --color-warning: #ed6c02;
+  --color-danger: #d32f2f;
+  --color-info: #0288d1;
+
+  // Neutrals / surfaces
+  --color-surface: #ffffff;
+  --color-surface-alt: #f5f7fa;
+  --color-border: #e0e3e8;
+  --color-text-primary: rgba(0, 0, 0, 0.87);
+  --color-text-secondary: rgba(0, 0, 0, 0.6);
+  --color-text-disabled: rgba(0, 0, 0, 0.38);
+  --color-text-on-primary: #ffffff;
+
+  // Layout
+  --header-height: 64px;
+  --sidenav-width: 260px;
+  --footer-height: 48px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+// Dark theme overrides — toggled by adding `.dark-theme` on <body>
+.dark-theme {
+  --color-surface: #1e1e24;
+  --color-surface-alt: #26262e;
+  --color-border: #3a3a44;
+  --color-text-primary: rgba(255, 255, 255, 0.92);
+  --color-text-secondary: rgba(255, 255, 255, 0.65);
+  --color-text-disabled: rgba(255, 255, 255, 0.38);
+}

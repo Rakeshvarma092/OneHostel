@@ -1,0 +1,208 @@
+// Standard filter & search controls, shared by every list/report screen.
+//
+//   <div class="filter-bar">
+//     <mat-form-field appearance="outline" class="filter-field filter-field--search">…</mat-form-field>
+//     <mat-form-field appearance="outline" class="filter-field filter-field--date">…</mat-form-field>
+//     <mat-form-field appearance="outline" class="filter-field">…</mat-form-field>
+//     <button type="button" class="filter-reset">…</button>
+//   </div>
+//
+// One look everywhere: 38px outlined field, 8px radius, slate-300 border,
+// 13.5px text, no floating label / hint row.
+
+$filter-height: 38px;
+$filter-border: #cbd5e1;
+$filter-border-hover: #94a3b8;
+$filter-border-focus: #0d9488;
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mat-mdc-form-field.filter-field {
+  width: 190px;
+  font-size: 13.5px;
+
+  &.filter-field--search {
+    width: 280px;
+  }
+
+  &.filter-field--date {
+    width: 250px;
+  }
+
+  .mat-mdc-text-field-wrapper {
+    background-color: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 0 12px !important;
+    height: $filter-height !important;
+  }
+
+  .mat-mdc-form-field-flex {
+    height: $filter-height !important;
+    align-items: center !important;
+  }
+
+  .mat-mdc-form-field-infix {
+    padding: 0 !important;
+    min-height: 0 !important;
+    width: auto;
+    border-top: none !important;
+    display: flex;
+    align-items: center;
+  }
+
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+  }
+
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: $filter-border !important;
+    border-width: 1px !important;
+  }
+
+  .mdc-notched-outline__leading {
+    border-radius: 8px 0 0 8px !important;
+  }
+
+  .mdc-notched-outline__trailing {
+    border-radius: 0 8px 8px 0 !important;
+  }
+
+  &:hover:not(.mat-focused):not(.mat-form-field-disabled) {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: $filter-border-hover !important;
+    }
+  }
+
+  &.mat-focused {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: $filter-border-focus !important;
+    }
+  }
+
+  // Text, selected value and placeholders
+  input.mat-mdc-input-element,
+  .mat-mdc-select-value,
+  .mat-date-range-input {
+    font-size: 13.5px;
+    color: #0f172a;
+  }
+
+  input.mat-mdc-input-element::placeholder,
+  .mat-date-range-input-inner::placeholder,
+  .mat-mdc-select-placeholder {
+    color: #64748b;
+  }
+
+  .mat-date-range-input-separator {
+    color: #64748b;
+  }
+
+  // Leading icon (search)
+  .mat-mdc-form-field-icon-prefix {
+    padding: 0 6px 0 0 !important;
+    display: flex;
+    align-items: center;
+
+    > .mat-icon {
+      padding: 0 !important;
+      font-size: 19px;
+      width: 19px;
+      height: 19px;
+      color: #64748b;
+    }
+  }
+
+  // Trailing controls (clear button, datepicker toggle)
+  .mat-mdc-form-field-icon-suffix {
+    padding-left: 2px !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+
+    .mat-mdc-icon-button {
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mat-datepicker-toggle .mat-icon {
+      color: #64748b;
+    }
+  }
+
+  // Disabled (e.g. a date range that doesn't apply to the current report)
+  &.mat-form-field-disabled .mat-mdc-text-field-wrapper {
+    background-color: #f8fafc !important;
+  }
+}
+
+// Small "×" inside a search field
+.filter-clear-btn.mat-mdc-icon-button {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+
+  .mdc-icon-button__ripple,
+  .mat-mdc-button-touch-target {
+    display: none !important;
+  }
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #94a3b8;
+  }
+
+  &:hover .mat-icon {
+    color: #475569;
+  }
+}
+
+// "Reset" link shown once any filter is applied
+.filter-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: $filter-height;
+  padding: 0 10px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: #0057e7;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: #eff6ff;
+  }
+}
+
+@media (max-width: 720px) {
+  .mat-mdc-form-field.filter-field,
+  .mat-mdc-form-field.filter-field.filter-field--search,
+  .mat-mdc-form-field.filter-field.filter-field--date {
+    width: 100%;
+  }
+}

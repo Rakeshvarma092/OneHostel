@@ -1,0 +1,30 @@
+<div class="layout-wrapper">
+  <mat-sidenav-container class="layout-container" autosize>
+    <mat-sidenav
+      [mode]="(isHandset$ | async) ? 'over' : 'side'"
+      [opened]="(isHandset$ | async) ? sidenavOpened : true"
+      class="layout-sidenav"
+      [disableClose]="!(isHandset$ | async)"
+    >
+      <app-sidebar [collapsed]="!(isHandset$ | async) && sidebarCollapsed"></app-sidebar>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="layout-content">
+      <app-header
+        [user]="currentUser$ | async"
+        (menuToggle)="toggleSidenav()"
+        (logout)="onLogout()"
+        (profile)="onProfile()"
+        (changePassword)="onChangePassword()"
+        (navigateTo)="onGlobalSearchNavigate($event)"
+      >
+      </app-header>
+
+      <app-breadcrumb [pageTitle]="pageTitle" [subtitle]="pageSubtitle"></app-breadcrumb>
+
+      <main class="layout-page" #pageScroller>
+        <router-outlet></router-outlet>
+      </main>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,0 +1,138 @@
+<div class="onboarding-page">
+  <div class="saas-card">
+    <!-- Filters -->
+    <div class="saas-card__header">
+      <mat-form-field appearance="outline" class="filter-field filter-field--search">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput type="text" placeholder="Search ID, name, username, room..." [(ngModel)]="search" (ngModelChange)="currentPage = 0" />
+        @if (search) {
+          <button mat-icon-button matSuffix type="button" class="filter-clear-btn" aria-label="Clear search" (click)="search = ''; currentPage = 0">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-select [(ngModel)]="hostelFilter" (ngModelChange)="currentPage = 0" aria-label="Filter by hostel">
+          <mat-option value="All">All Hostels</mat-option>
+          @for (h of hostelOptions; track h) {
+            <mat-option [value]="h">{{ h }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-select [(ngModel)]="roleFilter" (ngModelChange)="currentPage = 0" aria-label="Filter by role">
+          <mat-option value="All">All Roles</mat-option>
+          @for (r of roles; track r) {
+            <mat-option [value]="r">{{ r }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-select [(ngModel)]="statusFilter" (ngModelChange)="currentPage = 0" aria-label="Filter by status">
+          <mat-option value="All">All Statuses</mat-option>
+          @for (s of statusOptions; track s) {
+            <mat-option [value]="s">{{ s }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (hasFilters) {
+        <button type="button" class="filter-reset" (click)="resetFilters()">
+          <mat-icon>restart_alt</mat-icon> Reset
+        </button>
+      }
+    </div>
+
+    <!-- One card per onboarded hostel: its Admins and Residents together -->
+    @if (groups.length) {
+      <div class="groups">
+        @for (g of groups; track g.hostel) {
+          <section class="group-card">
+            <button type="button" class="group-card__head" [attr.aria-expanded]="!isCollapsed(g.hostel)" (click)="toggleGroup(g.hostel)">
+              <span class="group-card__icon"><mat-icon>apartment</mat-icon></span>
+              <span class="group-card__title">{{ g.hostel }}</span>
+              <span class="group-card__meta">
+                {{ g.admins }} {{ g.admins === 1 ? 'Admin' : 'Admins' }} · {{ g.residents }} {{ g.residents === 1 ? 'Resident' : 'Residents' }}
+              </span>
+              <span class="group-card__count">{{ g.total }} {{ g.total === 1 ? 'record' : 'records' }}</span>
+              <mat-icon class="group-card__chevron">{{ isCollapsed(g.hostel) ? 'expand_more' : 'expand_less' }}</mat-icon>
+            </button>
+
+            @if (!isCollapsed(g.hostel)) {
+              <div class="group-card__body">
+                <table class="group-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Role</th>
+                      <th>Room / Bed</th>
+                      <th>Last Login</th>
+                      <th>Status</th>
+                      <th class="col-actions">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (u of g.rows; track u.id) {
+                      <tr>
+                        <td class="font-semibold">{{ u.id }}</td>
+                        <td>{{ u.name }}</td>
+                        <td>
+                          <span class="role-chip" [class.role-chip--admin]="u.role === 'Admin'">{{ u.role }}</span>
+                        </td>
+                        <td>
+                          @if (u.roomBed) {
+                            {{ u.roomBed }}
+                          } @else {
+                            <span class="never">—</span>
+                          }
+                        </td>
+                        <td>
+                          @if (u.lastLogin) {
+                            {{ u.lastLogin | date: 'dd-MMM-yy, h:mm a' }}
+                          } @else {
+                            <span class="never">Never</span>
+                          }
+                        </td>
+                        <td><span class="status-badge status-badge--{{ u.tone }}">{{ u.status }}</span></td>
+                        <td class="col-actions">
+                          <button type="button" class="icon-action" matTooltip="View" [attr.aria-label]="'View ' + u.name" (click)="view(u)">
+                            <mat-icon>visibility</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        [headers]="headers"
+        [message]="hasFilters ? 'No users match your filters' : 'No Data Found'"
+      ></app-empty-state>
+    }
+
+    <app-pagination [page]="safePage" [totalPages]="totalPages" (pageChange)="setPage($event)"></app-pagination>
+  </div>
+</div>
+
+<app-admin-detail-panel
+  [isOpen]="adminPanelOpen"
+  [adminId]="selectedAdminId"
+  [initialTab]="adminPanelTab"
+  [showEdit]="true"
+  (closePanel)="adminPanelOpen = false"
+></app-admin-detail-panel>
+
+<app-resident-detail-panel
+  [isOpen]="residentPanelOpen"
+  [residentId]="selectedResidentId"
+  (closePanel)="residentPanelOpen = false"
+></app-resident-detail-panel>

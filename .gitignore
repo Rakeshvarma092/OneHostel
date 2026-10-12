@@ -1,0 +1,46 @@
+# Dependencies
+/node_modules
+
+# Build output
+/dist
+/out-tsc
+/bazel-out
+
+# Angular cache
+/.angular/cache
+.angular/
+.sass-cache/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# Test coverage
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# Environment / secrets
+.env
+.env.*
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# System files
+.DS_Store
+Thumbs.db

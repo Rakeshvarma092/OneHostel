@@ -1,0 +1,398 @@
+.reports-page {
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.saas-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 34, 74, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  padding: 20px 24px;
+  min-width: 0;
+}
+
+/* Report selector */
+.report-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.report-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    border-color: #0d9488;
+    color: #0d9488;
+  }
+}
+
+.report-tab--active {
+  background: #0d9488;
+  border-color: #0d9488;
+  color: #ffffff;
+
+  &:hover {
+    color: #ffffff;
+  }
+}
+
+/* Filters — fields use the shared .filter-field sizes (styles/_filters.scss) */
+.filter-bar--labelled {
+  align-items: flex-end;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 720px) {
+  .filter-item {
+    width: 100%;
+  }
+}
+
+.filter-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.filter-hint {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.filter-actions__left,
+.filter-actions__right {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+%btn-base {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  @extend %btn-base;
+  position: relative;
+  background: #0057e7;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 87, 231, 0.25);
+
+  &:hover {
+    background: #0045b5;
+  }
+}
+
+.pending-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 2px solid #ffffff;
+}
+
+.btn-secondary {
+  @extend %btn-base;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+}
+
+.btn-export {
+  @extend %btn-base;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+
+  &:hover:not(:disabled) {
+    background: #f8fafc;
+  }
+}
+
+.btn-export--excel mat-icon {
+  color: #15803d;
+}
+
+.btn-export--pdf mat-icon {
+  color: #dc2626;
+}
+
+.applied-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 12.5px;
+  color: #64748b;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.applied-summary__count {
+  margin-left: auto;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+/* Stat tiles */
+.stat-row {
+  display: grid;
+  gap: 14px;
+}
+
+.stat-row--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stat-row--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stat-row--5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+@media (max-width: 1100px) {
+  .stat-row--4,
+  .stat-row--5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .stat-row--3,
+  .stat-row--4,
+  .stat-row--5 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-tile {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 34, 74, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  padding: 16px 18px;
+}
+
+.stat-tile__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.stat-tile__value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-tile__foot {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* Report body */
+.report-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 2fr) 3fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .report-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 14px;
+}
+
+.chart-card .card-title {
+  margin-bottom: 2px;
+}
+
+.card-subtitle {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0 0 14px;
+}
+
+// Base table styles come from src/styles/_table.scss; Reports keeps a more
+// compact row height and adds totals rows / numeric columns below.
+.saas-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    background-color: #e6f7f0;
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td {
+    color: #475569;
+    font-size: 13.5px;
+    padding: 13px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+
+  tfoot td {
+    font-weight: 700;
+    color: #0f172a;
+    border-top: 2px solid #e2e8f0;
+    border-bottom: none;
+    background: #f8fafc;
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .font-semibold {
+    font-weight: 700;
+    color: #0f224a;
+  }
+
+  .font-medium {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .cell-sub {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .empty-cell {
+    text-align: center;
+    padding: 40px 14px;
+    color: #64748b;
+    font-weight: 600;
+  }
+}
+
+.occupancy-col {
+  width: 220px;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.meter__track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.meter__fill {
+  height: 100%;
+  background: #0d9488;
+  border-radius: 0 4px 4px 0;
+}
+
+.meter__value {
+  width: 48px;
+  text-align: right;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+// Status badges come from src/styles/_table.scss (shared with every list screen).

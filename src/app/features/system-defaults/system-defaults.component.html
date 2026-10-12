@@ -1,0 +1,661 @@
+<div class="settings-page" [formGroup]="form">
+  <!-- Section navigation -->
+  <nav class="settings-nav" aria-label="Settings sections">
+    @for (s of sections; track s.key) {
+      <button
+        type="button"
+        class="settings-nav__item"
+        [class.settings-nav__item--active]="activeSection === s.key"
+        [attr.aria-current]="activeSection === s.key ? 'page' : null"
+        (click)="selectSection(s.key)"
+      >
+        <mat-icon>{{ s.icon }}</mat-icon>
+        <span class="settings-nav__text">
+          <span class="settings-nav__label">{{ s.label }}</span>
+        </span>
+        <span class="unsaved-dot" *ngIf="isDirty(s.key)" matTooltip="Unsaved changes"></span>
+      </button>
+    }
+  </nav>
+
+  <div class="saas-card settings-card">
+    <div class="settings-card__header">
+      <div>
+        <h2 class="settings-card__title">{{ activeNav.label }} Settings</h2>
+        <p class="settings-card__desc">{{ activeNav.description }}</p>
+      </div>
+      <div class="header-actions">
+        <div class="header-actions__buttons">
+          <button
+            type="button"
+            class="btn-secondary btn-sm"
+            [disabled]="isAtDefaults"
+            [matTooltip]="isAtDefaults ? 'Already using the platform defaults' : 'Load the platform defaults into this form'"
+            (click)="resetToDefaults()"
+          >
+            <mat-icon>settings_backup_restore</mat-icon>
+            <span>Reset to defaults</span>
+          </button>
+          <button type="button" class="btn-primary btn-sm" [disabled]="!activeGroup.dirty" (click)="save()">
+            <span>Submit</span>
+          </button>
+        </div>
+
+        @if (activeGroup.dirty && invalidCount > 0) {
+          <span class="footer-status footer-status--error">
+            <mat-icon>error_outline</mat-icon>
+            {{ invalidCount }} field{{ invalidCount > 1 ? 's' : '' }} need{{ invalidCount > 1 ? '' : 's' }} attention
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="settings-card__body">
+      <!-- ============================ GENERAL ============================ -->
+      @if (activeSection === 'general') {
+        <div formGroupName="general" class="section-narrow">
+          <div class="field-grid">
+            <div class="field-group">
+              <label class="field-label">Email <span class="required-star">*</span></label>
+              <mat-form-field appearance="outline" class="full-width">
+                <input matInput type="email" formControlName="supportEmail" placeholder="support@example.com" />
+                <mat-error>Enter a valid email address</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Mobile <span class="required-star">*</span></label>
+              <!-- One field: country code select + number (same pattern as Admin → Mobile) -->
+              <mat-form-field appearance="outline" class="full-width mobile-field">
+                <!-- Stop clicks reaching mat-form-field: its container click would move focus
+                     to the number input and close the native list before a code is chosen. -->
+                <select
+                  matPrefix
+                  class="cc-select"
+                  formControlName="supportPhoneCode"
+                  aria-label="Country code"
+                  (mousedown)="$event.stopPropagation()"
+                  (click)="$event.stopPropagation()"
+                >
+                  @for (c of countries; track c.dialCode) {
+                    <option [value]="c.dialCode" [attr.aria-label]="c.name + ' ' + c.dialCode">{{ c.dialCode }}</option>
+                  }
+                </select>
+                <input matInput formControlName="supportPhone" inputmode="numeric" maxlength="10" placeholder="Mobile number" />
+                <mat-error>Enter 6–10 digits</mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Own row (half width), below Email and Mobile -->
+            <div class="field-group field-group--own-row">
+              <label class="field-label" for="app-name">Application Name</label>
+              <mat-form-field appearance="outline" class="full-width readonly-field">
+                <input id="app-name" matInput formControlName="applicationName" readonly aria-readonly="true" tabindex="-1" />
+                <mat-icon matSuffix class="readonly-lock" matTooltip="Application name can't be changed">lock</mat-icon>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Logo -->
+          <div class="field-group">
+            <label class="field-label">Logo</label>
+            <div class="logo-row">
+              <div class="logo-preview">
+                @if (value('general', 'logoDataUrl')) {
+                  <img [src]="value('general', 'logoDataUrl')" alt="Application logo" />
+                } @else {
+                  <span class="logo-fallback">{{ (value('general', 'applicationName') || 'O').charAt(0) }}</span>
+                }
+              </div>
+              <div class="logo-actions">
+                <div class="logo-buttons">
+                  <label class="btn-secondary btn-sm">
+                    <mat-icon>upload</mat-icon>
+                    <span>{{ value('general', 'logoDataUrl') ? 'Replace' : 'Upload' }}</span>
+                    <input type="file" accept="image/png,image/jpeg,image/svg+xml" hidden (change)="onLogoSelected($event)" />
+                  </label>
+                  <button type="button" class="btn-text-danger btn-sm" *ngIf="value('general', 'logoDataUrl')" (click)="removeLogo()">
+                    Remove
+                  </button>
+                </div>
+                <div class="field-hint">
+                  {{ value('general', 'logoFileName') || 'PNG, JPG or SVG · up to 512 KB · square works best' }}
+                </div>
+                <div class="field-error" *ngIf="logoError">{{ logoError }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field-group">
+              <label class="field-label">Currency <span class="required-star">*</span></label>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-select formControlName="currency">
+                  @for (c of currencies; track c.code) {
+                    <mat-option [value]="c.code">{{ c.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <div class="field-hint">Used to display amounts across the app.</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Time Zone <span class="required-star">*</span></label>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-select formControlName="timeZone">
+                  @for (t of timeZones; track t.value) {
+                    <mat-option [value]="t.value">{{ t.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Default Country <span class="required-star">*</span></label>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-select formControlName="defaultCountry">
+                  @for (c of countries; track c.name) {
+                    <mat-option [value]="c.name">{{ c.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Date Format <span class="required-star">*</span></label>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-select formControlName="dateFormat">
+                  @for (f of dateFormats; track f) {
+                    <mat-option [value]="f">{{ today | date: f }} <span class="option-sub">({{ f }})</span></mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <div class="field-hint">Today shows as <strong>{{ today | date: value('general', 'dateFormat') }}</strong></div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ============================ SECURITY ============================ -->
+      @if (activeSection === 'security') {
+        <div formGroupName="security">
+          <!-- Login method decides which fields below apply -->
+          <div class="field-grid">
+            <div class="field-group field-group--own-row">
+              <label class="field-label">Login Method <span class="required-star">*</span></label>
+              <mat-radio-group formControlName="loginMethod" class="radio-row" aria-label="Login method" color="primary">
+                <mat-radio-button value="Password">Password</mat-radio-button>
+                <mat-radio-button value="OTP">OTP</mat-radio-button>
+              </mat-radio-group>
+              <div class="field-hint">
+                {{ value('security', 'loginMethod') === 'OTP'
+                  ? 'Users sign in with a one-time code sent to them.'
+                  : 'Users sign in with their password.' }}
+              </div>
+            </div>
+
+            @if (value('security', 'loginMethod') === 'OTP') {
+              <div class="field-group">
+                <label class="field-label">OTP Expiry <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput type="number" formControlName="otpExpiryMinutes" min="1" max="30" />
+                  <span matTextSuffix class="unit">minutes</span>
+                  <mat-error>Between 1 and 30</mat-error>
+                </mat-form-field>
+                <div class="field-hint">How long a one-time password stays valid.</div>
+              </div>
+            } @else {
+              <div class="field-group">
+                <label class="field-label">Minimum Password Length <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput type="number" formControlName="minPasswordLength" min="6" max="32" />
+                  <span matTextSuffix class="unit">characters</span>
+                  <mat-error>Between 6 and 32</mat-error>
+                </mat-form-field>
+                <div class="field-hint">8 or more is recommended.</div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label">Password Expiry <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-select formControlName="passwordExpiryDays">
+                    @for (o of passwordExpiryOptions; track o.days) {
+                      <mat-option [value]="o.days">{{ o.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <div class="field-hint">Users must set a new password after this period.</div>
+              </div>
+
+              <div class="field-group field-group--own-row field-group--full">
+                <label class="field-label">Password Format</label>
+                <div class="format-rules" role="group" aria-label="Password format rules">
+                  <mat-slide-toggle hideIcon formControlName="requireUppercase">Uppercase letter (A–Z)</mat-slide-toggle>
+                  <mat-slide-toggle hideIcon formControlName="requireLowercase">Lowercase letter (a–z)</mat-slide-toggle>
+                  <mat-slide-toggle hideIcon formControlName="requireNumber">Number (0–9)</mat-slide-toggle>
+                  <mat-slide-toggle hideIcon formControlName="requireSpecialChar">Special character (!&#64;#$…)</mat-slide-toggle>
+                </div>
+                <div class="field-hint">New passwords must include each item that's switched on. Spaces are never allowed.</div>
+              </div>
+            }
+
+            <div class="field-group">
+              <label class="field-label">Maximum Login Attempts <span class="required-star">*</span></label>
+              <mat-form-field appearance="outline" class="full-width">
+                <input matInput type="number" formControlName="maxLoginAttempts" min="3" max="10" />
+                <span matTextSuffix class="unit">attempts</span>
+                <mat-error>Between 3 and 10</mat-error>
+              </mat-form-field>
+              <div class="field-hint">The account is locked after this many failed logins in a row.</div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Session Timeout <span class="required-star">*</span></label>
+              <mat-form-field appearance="outline" class="full-width">
+                <input matInput type="number" formControlName="sessionTimeoutMinutes" min="5" max="480" />
+                <span matTextSuffix class="unit">minutes</span>
+                <mat-error>Between 5 and 480</mat-error>
+              </mat-form-field>
+              <div class="field-hint">Signs users out after this much inactivity.</div>
+            </div>
+          </div>
+
+          @if (policyStrength; as ps) {
+            <div class="strength strength--{{ ps.label.toLowerCase() }}">
+              <div class="strength__head">
+                <mat-icon>{{ ps.label === 'Strong' ? 'verified_user' : ps.label === 'Moderate' ? 'shield' : 'gpp_maybe' }}</mat-icon>
+                <span class="strength__label">Policy strength: {{ ps.label }}</span>
+                <span class="strength__score">{{ ps.score }}/{{ ps.max }}</span>
+              </div>
+              <div class="strength__meter" role="meter" [attr.aria-valuenow]="ps.score" aria-valuemin="0" [attr.aria-valuemax]="ps.max" [attr.aria-label]="'Policy strength ' + ps.label">
+                @for (i of segments(ps.max); track i) {
+                  <span class="strength__seg" [class.strength__seg--on]="i <= ps.score"></span>
+                }
+              </div>
+              @if (ps.tips.length) {
+                <ul class="strength__tips">
+                  @for (tip of ps.tips; track tip) {
+                    <li>{{ tip }}</li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+
+          <div class="policy-summary">
+            <mat-icon>policy</mat-icon>
+            <span>
+              @if (value('security', 'loginMethod') === 'OTP') {
+                Users sign in with a <strong>one-time password</strong> that lasts
+                <strong>{{ value('security', 'otpExpiryMinutes') }} min</strong>.
+              } @else {
+                Passwords need at least <strong>{{ value('security', 'minPasswordLength') }}</strong> characters{{ formatSummary ? ',' : '' }}
+                @if (formatSummary) {
+                  including <strong>{{ formatSummary }}</strong>,
+                }
+                and {{ value('security', 'passwordExpiryDays') ? 'expire every ' : '' }}<strong>{{ value('security', 'passwordExpiryDays') ? value('security', 'passwordExpiryDays') + ' days' : 'never expire' }}</strong>.
+              }
+              Accounts lock after <strong>{{ value('security', 'maxLoginAttempts') }}</strong> failed attempts; sessions end after
+              <strong>{{ value('security', 'sessionTimeoutMinutes') }} min</strong> idle.
+            </span>
+          </div>
+        </div>
+      }
+
+      <!-- ========================= COMMUNICATION ========================= -->
+      @if (activeSection === 'communication') {
+        <div formGroupName="communication">
+          <!-- Email -->
+          <div class="sub-section">
+            <div class="sub-section__head">
+              <mat-icon>mail</mat-icon>
+              <h3>Email Provider</h3>
+            </div>
+            <div class="field-grid">
+              <div class="field-group">
+                <label class="field-label">Provider <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-select formControlName="emailProvider">
+                    @for (p of emailProviders; track p) {
+                      <mat-option [value]="p">{{ p }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Sender Name <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput formControlName="emailSenderName" />
+                  <mat-error>Sender name is required</mat-error>
+                </mat-form-field>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Sender Email <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput type="email" formControlName="emailSenderAddress" />
+                  <mat-error>Enter a valid email address</mat-error>
+                </mat-form-field>
+              </div>
+
+              @if (value('communication', 'emailProvider') === 'SMTP') {
+                <div class="field-group">
+                  <label class="field-label">SMTP Host <span class="required-star">*</span></label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput formControlName="smtpHost" placeholder="smtp.example.com" />
+                    <mat-error>SMTP host is required</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">SMTP Port <span class="required-star">*</span></label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput type="number" formControlName="smtpPort" placeholder="587" />
+                    <mat-error>Enter a port between 1 and 65535</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">SMTP Username <span class="required-star">*</span></label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput formControlName="smtpUsername" autocomplete="off" />
+                    <mat-error>SMTP username is required</mat-error>
+                  </mat-form-field>
+                </div>
+                <ng-container *ngTemplateOutlet="secretField; context: { key: 'smtpPassword', label: 'SMTP Password' }"></ng-container>
+              } @else {
+                <ng-container *ngTemplateOutlet="secretField; context: { key: 'emailApiKey', label: 'API Key' }"></ng-container>
+              }
+            </div>
+          </div>
+
+          <!-- SMS -->
+          <div class="sub-section">
+            <div class="sub-section__head">
+              <mat-icon>sms</mat-icon>
+              <h3>SMS Provider</h3>
+            </div>
+            <div class="field-grid">
+              <div class="field-group">
+                <label class="field-label">Provider <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-select formControlName="smsProvider">
+                    @for (p of smsProviders; track p) {
+                      <mat-option [value]="p">{{ p }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Sender ID <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput formControlName="smsSenderId" placeholder="e.g. ONEHST" (input)="toUpper('communication', 'smsSenderId')" />
+                  <mat-error>3–11 capital letters or digits</mat-error>
+                </mat-form-field>
+                <div class="field-hint">DLT-registered header shown to recipients.</div>
+              </div>
+              <ng-container *ngTemplateOutlet="secretField; context: { key: 'smsApiKey', label: 'API Key' }"></ng-container>
+            </div>
+          </div>
+
+          <!-- Push -->
+          <div class="sub-section">
+            <div class="sub-section__head">
+              <mat-icon>notifications_active</mat-icon>
+              <h3>Push Notifications</h3>
+              <mat-slide-toggle hideIcon formControlName="pushEnabled" class="head-toggle" aria-label="Enable push notifications">
+                {{ value('communication', 'pushEnabled') ? 'Enabled' : 'Disabled' }}
+              </mat-slide-toggle>
+            </div>
+            @if (value('communication', 'pushEnabled')) {
+              <div class="field-grid">
+                <div class="field-group">
+                  <label class="field-label">Provider <span class="required-star">*</span></label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-select formControlName="pushProvider">
+                      @for (p of pushProviders; track p) {
+                        <mat-option [value]="p">{{ p }}</mat-option>
+                      }
+                    </mat-select>
+                    <mat-error>Choose a provider</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">
+                    {{ value('communication', 'pushProvider') === 'OneSignal' ? 'App ID' : 'Project ID' }} <span class="required-star">*</span>
+                  </label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput formControlName="pushProjectId" />
+                    <mat-error>This field is required</mat-error>
+                  </mat-form-field>
+                </div>
+                <ng-container
+                  *ngTemplateOutlet="secretField; context: { key: 'pushServerKey', label: value('communication', 'pushProvider') === 'OneSignal' ? 'REST API Key' : 'Server Key' }"
+                ></ng-container>
+              </div>
+            } @else {
+              <p class="muted-note">Push notifications are off. Templates using the Push channel won't be sent.</p>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ============================ PAYMENT ============================ -->
+      @if (activeSection === 'payment') {
+        <div formGroupName="payment">
+          <div class="sub-section">
+            <div class="sub-section__head">
+              <mat-icon>credit_card</mat-icon>
+              <h3>Payment Gateway</h3>
+            </div>
+            <div class="field-grid">
+              <div class="field-group">
+                <label class="field-label">Gateway <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-select formControlName="paymentGateway">
+                    @for (g of paymentGateways; track g) {
+                      <mat-option [value]="g">{{ g }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Mode <span class="required-star">*</span></label>
+                <mat-button-toggle-group formControlName="gatewayMode" class="mode-toggle" aria-label="Gateway mode">
+                  <mat-button-toggle value="Test">Test</mat-button-toggle>
+                  <mat-button-toggle value="Live">Live</mat-button-toggle>
+                </mat-button-toggle-group>
+                <div class="field-hint" [class.field-hint--warn]="value('payment', 'gatewayMode') === 'Live'">
+                  {{ value('payment', 'gatewayMode') === 'Live' ? 'Live mode charges real money.' : 'Test mode — no real charges.' }}
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Key ID <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput formControlName="gatewayKeyId" autocomplete="off" />
+                  <mat-error>Key ID is required</mat-error>
+                </mat-form-field>
+              </div>
+              <ng-container *ngTemplateOutlet="secretField; context: { key: 'gatewayKeySecret', label: 'Key Secret' }"></ng-container>
+              <div class="field-group">
+                <label class="field-label">Currency <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-select formControlName="currency">
+                    @for (c of currencies; track c.code) {
+                      <mat-option [value]="c.code">{{ c.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <div class="field-hint">Currency hostels are billed and charged in.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-section">
+            <div class="sub-section__head">
+              <mat-icon>receipt_long</mat-icon>
+              <h3>Invoices</h3>
+            </div>
+            <div class="field-grid">
+              <div class="field-group">
+                <label class="field-label">Invoice Prefix <span class="required-star">*</span></label>
+                <mat-form-field appearance="outline" class="full-width">
+                  <input matInput formControlName="invoicePrefix" placeholder="INV-" (input)="toUpper('payment', 'invoicePrefix')" />
+                  <mat-error>Up to 10 capital letters, digits, "-" or "/"</mat-error>
+                </mat-form-field>
+                <div class="field-hint">Next invoice: <strong class="mono">{{ invoicePreview }}</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ============================ FEES ============================ -->
+      @if (activeSection === 'fees') {
+        <div formGroupName="fees">
+          <div class="sub-section">
+            <div class="sub-section__head">
+              <mat-icon>percent</mat-icon>
+              <h3>GST</h3>
+              <mat-slide-toggle hideIcon formControlName="gstEnabled" class="head-toggle" aria-label="Enable GST">
+                {{ value('fees', 'gstEnabled') ? 'Enabled' : 'Disabled' }}
+              </mat-slide-toggle>
+            </div>
+            @if (value('fees', 'gstEnabled')) {
+              <div class="field-grid">
+                <div class="field-group">
+                  <label class="field-label">GST Rate <span class="required-star">*</span></label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput type="number" formControlName="gstRate" min="0" max="28" step="0.01" />
+                    <span matTextSuffix class="unit">%</span>
+                    <mat-error>Between 0 and 28</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">GSTIN <span class="required-star">*</span></label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput formControlName="gstin" placeholder="22AAAAA0000A1Z5" (input)="toUpper('fees', 'gstin')" />
+                    <mat-error>Enter a valid 15-character GSTIN</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Plan Prices</label>
+                  <mat-radio-group formControlName="pricesIncludeTax" class="radio-row" aria-label="Tax treatment" color="primary">
+                    <mat-radio-button [value]="false">Exclude GST</mat-radio-button>
+                    <mat-radio-button [value]="true">Include GST</mat-radio-button>
+                  </mat-radio-group>
+                </div>
+              </div>
+
+              @if (taxPreview; as t) {
+                <div class="preview-box">
+                  <div class="preview-box__title">Example — a {{ samplePlanAmount | currency: paymentCurrencySymbol : 'symbol' : '1.0-0' }} plan</div>
+                  <div class="preview-box__row"><span>Amount</span><span>{{ t.base | currency: paymentCurrencySymbol : 'symbol' : '1.2-2' }}</span></div>
+                  <div class="preview-box__row"><span>GST ({{ value('fees', 'gstRate') }}%)</span><span>{{ t.tax | currency: paymentCurrencySymbol : 'symbol' : '1.2-2' }}</span></div>
+                  <div class="preview-box__row preview-box__row--total"><span>Total charged</span><span>{{ t.total | currency: paymentCurrencySymbol : 'symbol' : '1.2-2' }}</span></div>
+                </div>
+              }
+            } @else {
+              <p class="muted-note">No tax is added to invoices.</p>
+            }
+          </div>
+
+          <div class="sub-section">
+            <div class="sub-section__head">
+              <mat-icon>schedule</mat-icon>
+              <h3>Late Payment Fee</h3>
+              <mat-slide-toggle hideIcon formControlName="lateFeeEnabled" class="head-toggle" aria-label="Enable late payment fee">
+                {{ value('fees', 'lateFeeEnabled') ? 'Enabled' : 'Disabled' }}
+              </mat-slide-toggle>
+            </div>
+            @if (value('fees', 'lateFeeEnabled')) {
+              <div class="field-grid">
+                <div class="field-group">
+                  <label class="field-label">Fee Type <span class="required-star">*</span></label>
+                  <mat-radio-group formControlName="lateFeeType" class="radio-row" aria-label="Late fee type" color="primary">
+                    <mat-radio-button value="Fixed">Fixed</mat-radio-button>
+                    <mat-radio-button value="Percentage">Percentage</mat-radio-button>
+                  </mat-radio-group>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">
+                    {{ value('fees', 'lateFeeType') === 'Percentage' ? 'Fee Rate' : 'Fee Amount' }}
+                    <span class="required-star">*</span>
+                  </label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    @if (value('fees', 'lateFeeType') !== 'Percentage') {
+                      <span matTextPrefix class="unit unit--prefix">{{ paymentCurrencySymbol === 'INR' ? '₹' : paymentCurrencySymbol }}&nbsp;</span>
+                    }
+                    <input matInput type="number" formControlName="lateFeeValue" min="0" step="0.01" />
+                    @if (value('fees', 'lateFeeType') === 'Percentage') {
+                      <span matTextSuffix class="unit">%</span>
+                    }
+                    <mat-error>
+                      {{ value('fees', 'lateFeeType') === 'Percentage' ? 'Enter a rate between 0.01 and 100' : 'Enter an amount greater than 0' }}
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Grace Period <span class="required-star">*</span></label>
+                  <mat-form-field appearance="outline" class="full-width">
+                    <input matInput type="number" formControlName="lateFeeGraceDays" min="0" max="60" step="1" />
+                    <span matTextSuffix class="unit">days</span>
+                    <mat-error>Whole days, 0 to 60</mat-error>
+                  </mat-form-field>
+                  <div class="field-hint">Days after the due date before the fee applies.</div>
+                </div>
+              </div>
+
+              @if (lateFeePreview; as lf) {
+                <div class="preview-box">
+                  <div class="preview-box__title">Example — {{ lf.daysLate }} days after the due date</div>
+                  <div class="preview-box__row">
+                    <span>Amount due</span>
+                    <span>{{ lf.amountDue | currency: paymentCurrencySymbol : 'symbol' : '1.2-2' }}</span>
+                  </div>
+                  <div class="preview-box__row">
+                    <span>
+                      Late fee{{ value('fees', 'lateFeeType') === 'Percentage' ? ' (' + value('fees', 'lateFeeValue') + '%)' : '' }}
+                    </span>
+                    <span>{{ lf.fee | currency: paymentCurrencySymbol : 'symbol' : '1.2-2' }}</span>
+                  </div>
+                  <div class="preview-box__row preview-box__row--total">
+                    <span>Total payable</span>
+                    <span>{{ lf.payable | currency: paymentCurrencySymbol : 'symbol' : '1.2-2' }}</span>
+                  </div>
+                </div>
+              }
+            } @else {
+              <p class="muted-note">No fee is charged for late payments.</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Masked credential input, shared by every provider/gateway secret -->
+<ng-template #secretField let-key="key" let-label="label">
+  <div class="field-group">
+    <label class="field-label">{{ label }} <span class="required-star">*</span></label>
+    <mat-form-field appearance="outline" class="full-width">
+      <input
+        matInput
+        [type]="revealed.has(key) ? 'text' : 'password'"
+        [formControl]="$any(group(activeSection).get(key))"
+        autocomplete="new-password"
+        spellcheck="false"
+      />
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        class="reveal-btn"
+        [attr.aria-label]="(revealed.has(key) ? 'Hide ' : 'Show ') + label"
+        (click)="toggleReveal(key)"
+      >
+        <mat-icon>{{ revealed.has(key) ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      <mat-error>{{ label }} is required</mat-error>
+    </mat-form-field>
+    <div class="field-hint">Masked here and never written to Audit Logs.</div>
+  </div>
+</ng-template>

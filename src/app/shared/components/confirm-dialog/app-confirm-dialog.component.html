@@ -1,0 +1,46 @@
+<div class="confirm confirm--{{ tone }}">
+  <button type="button" class="confirm__close" aria-label="Close" (click)="onCancel()">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="confirm__header">
+    <div class="confirm__icon" aria-hidden="true">
+      <mat-icon>{{ icon }}</mat-icon>
+    </div>
+    <h2 class="confirm__title" mat-dialog-title>{{ data.title }}</h2>
+  </div>
+
+  <mat-dialog-content class="confirm__content">
+    <p class="confirm__message">{{ data.message }}</p>
+
+    @if (data.details?.length) {
+      <ul class="confirm__details">
+        @for (d of data.details; track d.label) {
+          <li>
+            <span class="confirm__detail-icon"><mat-icon>{{ d.icon }}</mat-icon></span>
+            <span class="confirm__detail-text">
+              <span class="confirm__detail-label">{{ d.label }}</span>
+              <span class="confirm__detail-value">{{ d.value }}</span>
+            </span>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (data.note) {
+      <div class="confirm__note">
+        <mat-icon>info</mat-icon>
+        <span>{{ data.note }}</span>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <div class="confirm__actions">
+    <button type="button" class="confirm__btn confirm__btn--cancel" (click)="onCancel()">
+      {{ data.cancelLabel ?? 'Cancel' }}
+    </button>
+    <button type="button" class="confirm__btn confirm__btn--confirm" (click)="onConfirm()">
+      {{ data.confirmLabel ?? 'Confirm' }}
+    </button>
+  </div>
+</div>

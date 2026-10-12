@@ -1,0 +1,176 @@
+<header class="app-header">
+  <div class="app-header__left">
+    <button class="app-header__icon-btn" (click)="menuToggle.emit()" aria-label="Toggle navigation menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <mat-form-field
+      appearance="outline"
+      class="app-header__search-field"
+      [class.app-header__search-field--active]="searchFocused || searchControl.value"
+    >
+      <mat-icon matPrefix class="app-header__search-icon">search</mat-icon>
+      <input
+        #searchInput
+        matInput
+        type="text"
+        placeholder="Search..."
+        aria-label="Search pages and actions"
+        [formControl]="searchControl"
+        [matAutocomplete]="globalSearch"
+        (focus)="searchFocused = true"
+        (blur)="searchFocused = false"
+        (keydown.escape)="onSearchEscape()"
+      />
+      @if (searchControl.value) {
+        <button matSuffix type="button" class="app-header__search-clear" aria-label="Clear search" (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+
+    <mat-autocomplete
+      #globalSearch="matAutocomplete"
+      class="global-search-panel"
+      panelWidth="420px"
+      [displayWith]="displaySearchLabel"
+      (optionSelected)="onSearchSelect($event)"
+    >
+      @for (group of searchGroups; track group.name) {
+        <mat-optgroup [label]="group.name" class="gs-group">
+          @for (item of group.items; track item.route) {
+            <mat-option [value]="item.route" class="gs-option">
+              <div class="gs-item">
+                <span class="gs-item__icon" [class.gs-item__icon--action]="item.group === 'Quick Actions'">
+                  <mat-icon>{{ group.name === 'Recent' ? 'history' : item.icon }}</mat-icon>
+                </span>
+                <span class="gs-item__text">
+                  <span class="gs-item__label">
+                    @for (part of labelParts(item.label); track $index) {
+                      @if (part.match) {
+                        <mark>{{ part.text }}</mark>
+                      } @else {
+                        {{ part.text }}
+                      }
+                    }
+                  </span>
+                  <span class="gs-item__desc">{{ item.description }}</span>
+                </span>
+                <mat-icon class="gs-item__go">{{ item.group === 'Quick Actions' ? 'add' : 'arrow_forward' }}</mat-icon>
+              </div>
+            </mat-option>
+          }
+        </mat-optgroup>
+      }
+
+      @if (!hasSearchResults) {
+        <mat-option disabled class="gs-empty-option">
+          <div class="gs-empty">
+            <mat-icon>search_off</mat-icon>
+            <div class="gs-empty__title">No results for “{{ searchControl.value }}”</div>
+            <div class="gs-empty__hint">Try a page name like “Reports” or a word like “billing”.</div>
+          </div>
+        </mat-option>
+      }
+
+      <div class="gs-footer">
+        <span aria-hidden="true"><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+        <span aria-hidden="true"><kbd>Enter</kbd> open</span>
+        <span aria-hidden="true"><kbd>Esc</kbd> close</span>
+        @if (hasRecent && !searchTerm) {
+          <button type="button" class="gs-footer__clear" (mousedown)="$event.preventDefault()" (click)="clearRecent($event)">
+            Clear recent
+          </button>
+        }
+      </div>
+    </mat-autocomplete>
+  </div>
+
+  <div class="app-header__right">
+    <button
+      class="app-header__icon-btn"
+      (click)="toggleFullscreen()"
+      [attr.aria-label]="isFullscreen ? 'Exit full screen' : 'Enter full screen'"
+    >
+      <mat-icon>{{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+    </button>
+
+    <button class="app-header__icon-btn" [matMenuTriggerFor]="notifMenu" aria-label="Notifications">
+      <mat-icon>notifications_none</mat-icon>
+      <span class="notification-dot" *ngIf="unreadCount > 0"></span>
+    </button>
+
+    <mat-menu #notifMenu="matMenu" xPosition="before" class="app-header__notif-menu">
+      <div class="notif-menu__header">
+        <span class="notif-menu__title">Notifications</span>
+        @if (unreadCount > 0) {
+          <button type="button" class="notif-menu__mark-read" (click)="markAllRead(); $event.stopPropagation()">
+            Mark all as read
+          </button>
+        }
+      </div>
+      <mat-divider></mat-divider>
+
+      @if (notifications.length > 0) {
+        @for (notification of notifications; track notification.id) {
+          <div class="notif-menu__item" [class.notif-menu__item--unread]="notification.unread">
+            <mat-icon class="notif-menu__item-icon">{{ notification.icon }}</mat-icon>
+            <div class="notif-menu__item-body">
+              <div class="notif-menu__item-title">{{ notification.title }}</div>
+              <div class="notif-menu__item-time">{{ notification.time }}</div>
+            </div>
+            @if (notification.unread) {
+              <span class="notif-menu__item-dot"></span>
+            }
+          </div>
+        }
+      } @else {
+        <div class="notif-menu__empty">You're all caught up!</div>
+      }
+    </mat-menu>
+
+    <div class="app-header__profile" [matMenuTriggerFor]="userMenu">
+      <div class="app-header__avatar">
+        @if (user?.avatarUrl) {
+          <img class="app-header__avatar-img" [src]="user!.avatarUrl" alt="" />
+        } @else {
+          {{ user?.name?.charAt(0)?.toUpperCase() ?? 'S' }}
+        }
+      </div>
+      <div class="app-header__user-details">
+        <span class="app-header__name">{{ user?.name || 'Super Admin' }}</span>
+      </div>
+      <mat-icon class="app-header__dropdown-icon">keyboard_arrow_down</mat-icon>
+    </div>
+
+    <mat-menu #userMenu="matMenu" xPosition="before" class="app-header__menu">
+      <div class="user-menu__header">
+        <div class="user-menu__avatar">
+          @if (user?.avatarUrl) {
+            <img [src]="user!.avatarUrl" alt="" />
+          } @else {
+            {{ initials }}
+          }
+        </div>
+        <div class="user-menu__identity">
+          <div class="user-menu__name">{{ user?.name || 'Super Admin' }}</div>
+          <div class="user-menu__email">{{ user?.email }}</div>
+        </div>
+      </div>
+      <div class="user-menu__items">
+        <button mat-menu-item class="user-menu__item" (click)="profile.emit()">
+          <mat-icon fontSet="material-icons-outlined">person</mat-icon>
+          <span>My Profile</span>
+        </button>
+        <button mat-menu-item class="user-menu__item" (click)="changePassword.emit()">
+          <mat-icon fontSet="material-icons-outlined">lock</mat-icon>
+          <span>Change Password</span>
+        </button>
+        <button mat-menu-item class="user-menu__item" (click)="logout.emit()">
+          <mat-icon>logout</mat-icon>
+          <span>Log Out</span>
+        </button>
+      </div>
+    </mat-menu>
+  </div>
+</header>

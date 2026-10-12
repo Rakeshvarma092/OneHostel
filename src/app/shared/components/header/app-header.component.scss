@@ -1,0 +1,678 @@
+.app-header {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #eef2f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-sizing: border-box;
+  z-index: 10;
+  position: relative;
+}
+
+.app-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+// Pill-shaped search: light grey fill, soft border, dark icon.
+.app-header__search-field {
+  width: 420px;
+  font-size: 13.5px;
+
+  ::ng-deep {
+    .mat-mdc-text-field-wrapper {
+      background-color: #f8fafc !important;
+      border-radius: 999px !important;
+      padding: 0 10px 0 18px !important;
+      height: 40px !important;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    // The outline pieces carry their own radius; round them to match the pill.
+    .mdc-notched-outline__leading {
+      border-radius: 999px 0 0 999px !important;
+      width: 24px !important;
+    }
+
+    .mdc-notched-outline__trailing {
+      border-radius: 0 999px 999px 0 !important;
+    }
+
+    input::placeholder {
+      color: #64748b;
+    }
+
+    .mat-mdc-form-field-icon-suffix {
+      display: flex;
+      align-items: center;
+      padding: 0 !important;
+    }
+
+    .mat-mdc-form-field-flex {
+      height: 40px !important;
+      align-items: center !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding: 0 !important;
+      min-height: 0 !important;
+      border-top: none !important;
+    }
+
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #e2e8f0 !important;
+      border-width: 1px !important;
+    }
+
+    .mat-mdc-form-field-icon-prefix {
+      padding-right: 8px;
+    }
+  }
+
+  &:hover ::ng-deep {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #cbd5e1 !important;
+    }
+  }
+}
+
+// Subtle lift while in use — stays light to match the resting style.
+.app-header__search-field--active {
+  ::ng-deep {
+    .mat-mdc-text-field-wrapper {
+      background-color: #ffffff !important;
+      box-shadow: 0 0 0 3px rgba(0, 87, 231, 0.08);
+    }
+
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #93c5fd !important;
+    }
+  }
+}
+
+.app-header__search-icon {
+  color: #334155;
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+}
+
+.app-header__search-clear {
+  width: 26px;
+  height: 26px;
+  padding: 0; // default button padding would clip the 16px icon
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+}
+
+// ---- Global search results panel -------------------------------------------
+// The autocomplete panel renders in a CDK overlay outside this component,
+// so these rules need ::ng-deep (scoped by the panel's own class).
+::ng-deep .global-search-panel.mat-mdc-autocomplete-panel {
+  margin-top: 6px;
+  padding: 6px 0 0 !important;
+  border-radius: 14px !important;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.25) !important;
+  max-height: 460px !important;
+
+  .mat-mdc-optgroup-label {
+    min-height: 0;
+    padding: 10px 16px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #94a3b8;
+
+    .mdc-list-item__primary-text {
+      font-size: inherit;
+    }
+  }
+
+  .gs-option.mat-mdc-option {
+    min-height: 0;
+    margin: 1px 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+
+    .mdc-list-item__primary-text {
+      width: 100%;
+    }
+
+    // Keyboard-highlighted / hovered row.
+    &.mat-mdc-option-active,
+    &:hover:not(.mdc-list-item--disabled) {
+      background: #eff6ff !important;
+
+      .gs-item__icon {
+        background: #ffffff;
+        color: #0057e7;
+      }
+
+      .gs-item__go {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .mat-pseudo-checkbox {
+      display: none;
+    }
+  }
+
+  .gs-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .gs-item__icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: #f1f5f9;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    mat-icon {
+      margin: 0;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .gs-item__icon--action {
+    background: #e6f7f5;
+    color: #0d9488;
+  }
+
+  .gs-item__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    line-height: 1.3;
+  }
+
+  .gs-item__label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #0f172a;
+
+    mark {
+      background: #fef08a;
+      color: inherit;
+      border-radius: 3px;
+      padding: 0 1px;
+    }
+  }
+
+  .gs-item__desc {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gs-item__go {
+    margin: 0;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #0057e7;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .gs-empty-option.mat-mdc-option {
+    min-height: 0;
+    opacity: 1;
+
+    .mdc-list-item__primary-text {
+      width: 100%;
+      opacity: 1;
+    }
+  }
+
+  .gs-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 22px 8px 18px;
+    text-align: center;
+
+    mat-icon {
+      margin: 0 0 8px;
+      font-size: 30px;
+      width: 30px;
+      height: 30px;
+      color: #cbd5e1;
+    }
+  }
+
+  .gs-empty__title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f172a;
+    word-break: break-word;
+  }
+
+  .gs-empty__hint {
+    margin-top: 2px;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  // Sticks to the bottom of the scrolling panel.
+  .gs-footer {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 6px;
+    padding: 9px 14px;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+    font-size: 11.5px;
+    color: #64748b;
+
+    kbd {
+      display: inline-block;
+      min-width: 18px;
+      margin-right: 3px;
+      padding: 0 4px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      font-family: inherit;
+      font-size: 10.5px;
+      font-weight: 600;
+      line-height: 16px;
+      text-align: center;
+      color: #475569;
+    }
+  }
+
+  .gs-footer__clear {
+    margin-left: auto;
+    padding: 2px 6px;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: #0057e7;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.app-header__search-option-icon {
+  margin-right: 10px;
+  color: #64748b;
+  vertical-align: middle;
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+}
+
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-header__icon-btn {
+  background: transparent;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+
+  .notification-dot {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f95a00;
+  }
+}
+
+.app-header__profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.app-header__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #0b1e48;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.app-header__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-header__user-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.app-header__name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0b1e48;
+  line-height: 1.2;
+}
+
+.app-header__dropdown-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+}
+
+/* Profile dropdown — the panel lives in the CDK overlay, so it's styled via ::ng-deep,
+   scoped by the menu's own class. */
+::ng-deep .app-header__menu.mat-mdc-menu-panel {
+  width: 300px;
+  max-width: 300px;
+  margin-top: 8px;
+  border-radius: 18px !important;
+  background: #ffffff;
+  box-shadow: 0 24px 50px -16px rgba(15, 34, 74, 0.28), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+  overflow: hidden;
+
+  .mat-mdc-menu-content {
+    padding: 0 !important;
+  }
+
+  .user-menu__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 20px 18px;
+    border-bottom: 1px solid #eef2f7;
+  }
+
+  .user-menu__avatar {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #0057e7 100%);
+    box-shadow: 0 8px 18px -8px rgba(0, 87, 231, 0.6);
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .user-menu__identity {
+    min-width: 0;
+  }
+
+  .user-menu__name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .user-menu__email {
+    margin-top: 3px;
+    font-size: 13px;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .user-menu__items {
+    padding: 8px;
+  }
+
+  .user-menu__item {
+    min-height: 52px;
+    padding: 0 14px;
+    border-radius: 12px;
+    transition: background 0.15s ease;
+
+    & + .user-menu__item {
+      margin-top: 2px;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: 14px;
+        right: 14px;
+        height: 1px;
+        background: #eef2f7;
+      }
+    }
+
+    .mat-icon {
+      margin-right: 14px;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      color: #0057e7;
+    }
+
+    .mat-mdc-menu-item-text {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: #0f172a;
+    }
+
+    &:hover,
+    &.cdk-keyboard-focused,
+    &.cdk-program-focused {
+      background: #eff5ff !important;
+
+      &::before,
+      & + .user-menu__item::before {
+        opacity: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: 1100px) {
+  .app-header__search-field {
+    width: 300px;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-header__search-field {
+    width: 180px;
+  }
+}
+
+/* Notifications menu (::ng-deep not needed here — .app-header__notif-menu is
+   applied by Material directly to the CDK overlay panel, outside this
+   component's view encapsulation). */
+::ng-deep .app-header__notif-menu {
+  width: 340px;
+  max-width: 340px;
+}
+
+.notif-menu__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.notif-menu__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b1e48;
+}
+
+.notif-menu__mark-read {
+  background: transparent;
+  border: none;
+  color: #0057e7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.notif-menu__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: default;
+
+  &--unread {
+    background: #f0f6ff;
+  }
+}
+
+.notif-menu__item-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #0057e7;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.notif-menu__item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-menu__item-title {
+  font-size: 13px;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.notif-menu__item-time {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.notif-menu__item-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0057e7;
+  margin-top: 4px;
+}
+
+.notif-menu__empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+}

@@ -1,0 +1,230 @@
+/* Card, table, filters, badges, empty state and pagination: src/styles/_table.scss + _filters.scss */
+
+/* User type tabs (same look as Subscription & Payment). */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: -1px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #64748b;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: #0f172a;
+  }
+}
+
+.tab--active,
+.tab--active:hover {
+  color: #0d9488;
+  border-bottom-color: #0d9488;
+}
+
+.never {
+  color: #94a3b8;
+}
+
+/* ---- One collapsible card per hostel ---- */
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.group-card {
+  border: 1px solid #cfe0f5;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.group-card__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: none;
+  background: #ffffff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: #fafcff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0057e7;
+    outline-offset: -2px;
+  }
+}
+
+.group-card__icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: #eef4ff;
+  color: #0057e7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.group-card__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.group-card__meta {
+  font-size: 13px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* Role column: Admin in blue, End User in grey. */
+.role-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.role-chip--admin {
+  background: #eef4ff;
+  color: #0057e7;
+}
+
+@media (max-width: 720px) {
+  .group-card__meta {
+    display: none;
+  }
+}
+
+.group-card__count {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid #d5dde8;
+  background: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.group-card__chevron {
+  flex-shrink: 0;
+  color: #475569;
+}
+
+.group-card__body {
+  border-top: 1px solid #e5e7eb;
+  overflow-x: auto;
+}
+
+.group-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 16px 22px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: left;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0 22px;
+    height: 64px;
+    border-bottom: 1px solid #eef2f7;
+    font-size: 14px;
+    color: #0f172a;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover td {
+    background: #fafcff;
+  }
+
+  .col-actions {
+    width: 1%;
+    text-align: right;
+  }
+}
+
+.icon-action {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #10b981;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: #ecfdf5;
+    color: #059669;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #10b981;
+    outline-offset: 1px;
+  }
+}

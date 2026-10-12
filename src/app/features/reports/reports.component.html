@@ -1,0 +1,447 @@
+<div class="reports-page">
+  <!-- Report selector -->
+  <div class="report-tabs" role="tablist" aria-label="Report type">
+    @for (tab of tabs; track tab.key) {
+      <button
+        type="button"
+        role="tab"
+        class="report-tab"
+        [class.report-tab--active]="activeReport === tab.key"
+        [attr.aria-selected]="activeReport === tab.key"
+        (click)="selectReport(tab.key)"
+      >
+        <mat-icon>{{ tab.icon }}</mat-icon>
+        <span>{{ tab.label }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Filters -->
+  <div class="saas-card filter-card">
+    <div class="filter-bar filter-bar--labelled">
+      <div class="filter-item">
+        <label class="filter-label">
+          Date range
+          <span class="filter-hint" *ngIf="activeTab.dateField">by {{ activeTab.dateField }}</span>
+        </label>
+        <mat-form-field
+          appearance="outline"
+          class="filter-field filter-field--date"
+          [matTooltip]="activeTab.dateField ? '' : 'Not applicable — this report is a current snapshot'"
+        >
+          <mat-date-range-input [rangePicker]="picker" [disabled]="!activeTab.dateField">
+            <input matStartDate placeholder="From" [(ngModel)]="draft.dateFrom" />
+            <input matEndDate placeholder="To" [(ngModel)]="draft.dateTo" />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matIconSuffix [for]="picker" [disabled]="!activeTab.dateField"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">Hostel</label>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select [(ngModel)]="draft.hostel">
+            <mat-option value="All">All Hostels</mat-option>
+            <mat-option *ngFor="let h of hostelNames" [value]="h">{{ h }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">City</label>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select [(ngModel)]="draft.city">
+            <mat-option value="All">All Cities</mat-option>
+            <mat-option *ngFor="let c of cities" [value]="c">{{ c }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">Hostel type</label>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select [(ngModel)]="draft.hostelType">
+            <mat-option value="All">All Types</mat-option>
+            <mat-option *ngFor="let t of hostelTypes" [value]="t">{{ t }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">Plan</label>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select [(ngModel)]="draft.plan">
+            <mat-option value="All">All Plans</mat-option>
+            <mat-option *ngFor="let p of plans" [value]="p">{{ p }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">Status</label>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-select [(ngModel)]="draft.status">
+            <mat-option value="All">All Statuses</mat-option>
+            <mat-option *ngFor="let s of statusOptions" [value]="s">{{ s }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="filter-actions">
+      <div class="filter-actions__left">
+        <button type="button" class="btn-primary" (click)="onSearch()">
+          <mat-icon>search</mat-icon>
+          <span>Search</span>
+          <span class="pending-dot" *ngIf="hasPendingChanges" aria-label="Unapplied changes"></span>
+        </button>
+        <button type="button" class="btn-secondary" (click)="onReset()">
+          <mat-icon>restart_alt</mat-icon>
+          <span>Reset</span>
+        </button>
+      </div>
+      <div class="filter-actions__right">
+        <button type="button" class="btn-export btn-export--excel" [disabled]="activeRowCount === 0" (click)="onExport('excel')">
+          <mat-icon>table_view</mat-icon>
+          <span>Export Excel</span>
+        </button>
+        <button type="button" class="btn-export btn-export--pdf" [disabled]="activeRowCount === 0" (click)="onExport('pdf')">
+          <mat-icon>picture_as_pdf</mat-icon>
+          <span>Export PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="applied-summary">
+      <mat-icon>filter_alt</mat-icon>
+      <span>{{ filterSummary }}</span>
+      <span class="applied-summary__count">{{ activeRowCount }} record{{ activeRowCount === 1 ? '' : 's' }}</span>
+    </div>
+  </div>
+
+  <!-- =========================== HOSTEL REPORT =========================== -->
+  @if (activeReport === 'hostels') {
+    <div class="stat-row stat-row--5">
+      <div class="stat-tile">
+        <div class="stat-tile__label">Total Hostels</div>
+        <div class="stat-tile__value">{{ hostelStats.total }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Active Hostels</div>
+        <div class="stat-tile__value">{{ hostelStats.active }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Inactive Hostels</div>
+        <div class="stat-tile__value">{{ hostelStats.inactive }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Regular Hostels</div>
+        <div class="stat-tile__value">{{ hostelStats.regular }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">College Hostels</div>
+        <div class="stat-tile__value">{{ hostelStats.college }}</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+      <div class="saas-card chart-card">
+        <h3 class="card-title">City-wise Hostels</h3>
+        <p class="card-subtitle">Number of hostels per city</p>
+        <app-report-bar-list [items]="cityBreakdown" unit="hostels" caption="City-wise hostels"></app-report-bar-list>
+      </div>
+
+      <div class="saas-card table-card">
+        <h3 class="card-title">Hostel List</h3>
+        <div class="table-responsive">
+          <table class="saas-table">
+            <thead>
+              <tr>
+                <th>Hostel ID</th>
+                <th>Hostel</th>
+                <th>City</th>
+                <th>Hostel Type</th>
+                <th>Plan</th>
+                <th>Onboarded</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of hostelRows; track h.hostelId) {
+                <tr>
+                  <td class="font-semibold">{{ h.hostelId }}</td>
+                  <td class="font-medium">{{ h.hostelName }}</td>
+                  <td>{{ h.city }}</td>
+                  <td>{{ h.hostelType }}</td>
+                  <td>{{ h.plan }}</td>
+                  <td>{{ h.onboardedDate | date: 'dd-MMM-yy' }}</td>
+                  <td><span class="status-badge status-badge--{{ tone(h.status) }}">{{ h.status }}</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="empty-cell">No hostels match the selected filters</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================== RESIDENT REPORT ========================== -->
+  @if (activeReport === 'residents') {
+    <div class="stat-row stat-row--3">
+      <div class="stat-tile">
+        <div class="stat-tile__label">Total Residents</div>
+        <div class="stat-tile__value">{{ residentStats.total | number }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Active Residents</div>
+        <div class="stat-tile__value">{{ residentStats.active | number }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Checked-out Residents</div>
+        <div class="stat-tile__value">{{ residentStats.checkedOut | number }}</div>
+      </div>
+    </div>
+
+    <div class="report-grid">
+      <div class="saas-card chart-card">
+        <h3 class="card-title">Active Residents by Hostel</h3>
+        <p class="card-subtitle">Residents currently staying</p>
+        <app-report-bar-list [items]="hostelResidentBars" unit="residents" caption="Active residents by hostel"></app-report-bar-list>
+      </div>
+
+      <div class="saas-card table-card">
+        <h3 class="card-title">Hostel-wise Residents</h3>
+        <div class="table-responsive">
+          <table class="saas-table">
+            <thead>
+              <tr>
+                <th>Hostel</th>
+                <th>City</th>
+                <th class="num">Active</th>
+                <th class="num">Checked-out</th>
+                <th class="num">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of residentRows; track h.hostelId) {
+                <tr>
+                  <td class="font-medium">{{ h.hostelName }}</td>
+                  <td>{{ h.city }}</td>
+                  <td class="num">{{ h.activeResidents | number }}</td>
+                  <td class="num">{{ h.checkedOutResidents | number }}</td>
+                  <td class="num font-medium">{{ h.activeResidents + h.checkedOutResidents | number }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="empty-cell">No hostels match the selected filters</td></tr>
+              }
+            </tbody>
+            @if (residentRows.length > 0) {
+              <tfoot>
+                <tr>
+                  <td colspan="2">Total</td>
+                  <td class="num">{{ residentStats.active | number }}</td>
+                  <td class="num">{{ residentStats.checkedOut | number }}</td>
+                  <td class="num">{{ residentStats.total | number }}</td>
+                </tr>
+              </tfoot>
+            }
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================= OCCUPANCY REPORT ========================= -->
+  @if (activeReport === 'occupancy') {
+    <div class="stat-row stat-row--4">
+      <div class="stat-tile">
+        <div class="stat-tile__label">Total Beds</div>
+        <div class="stat-tile__value">{{ occupancyStats.totalBeds | number }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Occupied</div>
+        <div class="stat-tile__value">{{ occupancyStats.occupied | number }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Available</div>
+        <div class="stat-tile__value">{{ occupancyStats.available | number }}</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Overall Occupancy</div>
+        <div class="stat-tile__value">{{ occupancyStats.occupancyPct | number: '1.1-1' }}%</div>
+      </div>
+    </div>
+
+    <div class="saas-card table-card">
+      <h3 class="card-title">Occupancy by Hostel</h3>
+      <div class="table-responsive">
+        <table class="saas-table">
+          <thead>
+            <tr>
+              <th>Hostel</th>
+              <th class="num">Total Beds</th>
+              <th class="num">Occupied</th>
+              <th class="num">Available</th>
+              <th class="occupancy-col">Occupancy %</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of occupancyRows; track r.hostelName) {
+              <tr>
+                <td>
+                  <div class="font-medium">{{ r.hostelName }}</div>
+                  <div class="cell-sub">{{ r.city }}</div>
+                </td>
+                <td class="num">{{ r.totalBeds | number }}</td>
+                <td class="num">{{ r.occupied | number }}</td>
+                <td class="num">{{ r.available | number }}</td>
+                <td class="occupancy-col">
+                  <div class="meter" [matTooltip]="r.occupied + ' of ' + r.totalBeds + ' beds occupied'">
+                    <div class="meter__track">
+                      <div class="meter__fill" [style.width.%]="r.occupancyPct"></div>
+                    </div>
+                    <span class="meter__value">{{ r.occupancyPct | number: '1.1-1' }}%</span>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty-cell">No hostels match the selected filters</td></tr>
+            }
+          </tbody>
+          @if (occupancyRows.length > 0) {
+            <tfoot>
+              <tr>
+                <td>Total</td>
+                <td class="num">{{ occupancyStats.totalBeds | number }}</td>
+                <td class="num">{{ occupancyStats.occupied | number }}</td>
+                <td class="num">{{ occupancyStats.available | number }}</td>
+                <td class="occupancy-col">{{ occupancyStats.occupancyPct | number: '1.1-1' }}%</td>
+              </tr>
+            </tfoot>
+          }
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ======================= SUBSCRIPTION REPORT ======================= -->
+  @if (activeReport === 'subscriptions') {
+    <div class="saas-card table-card">
+      <h3 class="card-title">Subscriptions</h3>
+      <div class="table-responsive">
+        <table class="saas-table">
+          <thead>
+            <tr>
+              <th>Hostel</th>
+              <th>Plan</th>
+              <th>Start Date</th>
+              <th>Expiry Date</th>
+              <th class="num">Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of subscriptionRows; track s.subscriptionId) {
+              <tr>
+                <td>
+                  <div class="font-medium">{{ s.hostelName }}</div>
+                  <div class="cell-sub">{{ s.subscriptionId }}</div>
+                </td>
+                <td>{{ s.planName }} <span class="cell-sub">· {{ s.billingCycle }}</span></td>
+                <td>{{ s.startDate | date: 'dd-MMM-yy' }}</td>
+                <td>{{ s.expiryDate | date: 'dd-MMM-yy' }}</td>
+                <td class="num">{{ s.amount > 0 ? (s.amount | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</td>
+                <td><span class="status-badge status-badge--{{ tone(s.status) }}">{{ s.status }}</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-cell">No subscriptions match the selected filters</td></tr>
+            }
+          </tbody>
+          @if (subscriptionRows.length > 0) {
+            <tfoot>
+              <tr>
+                <td colspan="4">Total</td>
+                <td class="num">{{ subscriptionTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          }
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ========================= REVENUE REPORT ========================= -->
+  @if (activeReport === 'revenue') {
+    <div class="stat-row stat-row--4">
+      <div class="stat-tile">
+        <div class="stat-tile__label">Total Collected</div>
+        <div class="stat-tile__value">{{ revenueStats.total | inrCurrency }}</div>
+        <div class="stat-tile__foot">Paid transactions, incl. tax</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Net Amount</div>
+        <div class="stat-tile__value">{{ revenueStats.amount | inrCurrency }}</div>
+        <div class="stat-tile__foot">Before tax</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Tax Collected</div>
+        <div class="stat-tile__value">{{ revenueStats.tax | inrCurrency }}</div>
+        <div class="stat-tile__foot">GST on paid transactions</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile__label">Pending</div>
+        <div class="stat-tile__value">{{ revenueStats.pending | inrCurrency }}</div>
+        <div class="stat-tile__foot">Awaiting payment</div>
+      </div>
+    </div>
+
+    <div class="saas-card table-card">
+      <h3 class="card-title">Transactions</h3>
+      <div class="table-responsive">
+        <table class="saas-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Hostel</th>
+              <th>Transaction ID</th>
+              <th class="num">Amount</th>
+              <th class="num">Tax</th>
+              <th class="num">Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of revenueRows; track p.transactionId) {
+              <tr>
+                <td>{{ p.paymentDate | date: 'dd-MMM-yy' }}</td>
+                <td class="font-medium">{{ p.hostelName }}</td>
+                <td class="font-semibold">{{ p.transactionId }}</td>
+                <td class="num">{{ p.amount | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+                <td class="num">{{ p.tax | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+                <td class="num font-medium">{{ p.totalAmount | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+                <td><span class="status-badge status-badge--{{ tone(p.paymentStatus) }}">{{ p.paymentStatus }}</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="empty-cell">No transactions match the selected filters</td></tr>
+            }
+          </tbody>
+          @if (revenueRows.length > 0) {
+            <tfoot>
+              <tr>
+                <td colspan="3">Collected (Paid)</td>
+                <td class="num">{{ revenueStats.amount | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+                <td class="num">{{ revenueStats.tax | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+                <td class="num">{{ revenueStats.total | currency: 'INR' : 'symbol' : '1.2-2' }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          }
+        </table>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,27 @@
+// Shared typographic scale for non-Material text (page titles, section headers).
+// Material component typography is handled by _theme.scss via mat.define-typography-config.
+
+.page-title {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+  color: var(--color-text-primary);
+  margin: 0 0 16px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--color-text-primary);
+  margin: 0 0 8px;
+}
+
+.text-muted {
+  color: var(--color-text-secondary);
+}
+
+.text-caption {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}

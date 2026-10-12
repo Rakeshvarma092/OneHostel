@@ -1,0 +1,361 @@
+// Standard list-screen styles, shared by every table page
+// (Hostel Onboarding, Subscription Plans, Communication Templates,
+// Admin Management, Subscription & Payment, Audit Logs) — one look everywhere.
+//
+//   <div class="onboarding-page">
+//     <div class="saas-card">
+//       <div class="saas-card__header">…filters… <button class="primary-green-btn">New</button></div>
+//       <div class="table-responsive">
+//         <table mat-table class="saas-table">… <span class="status-badge status-badge--success"> …
+//           … <td class="actions-cell"><button class="row-edit-btn">…</button></td>
+//       </div>
+//       <div class="empty-state-wrapper">…</div>
+//       <div class="saas-card__footer"><div class="pagination-right"><div class="pag-arrows">…</div></div></div>
+//     </div>
+//   </div>
+//
+// Screens keep only their genuinely unique styles locally. Component styles
+// are more specific than these, so a screen can still override any rule.
+// Card padding and status badges are scoped (to `.onboarding-page` and
+// `.saas-card`) so cards on Settings/Reports and badges in side panels or
+// dialogs keep their own styling.
+
+// ---- Page & card --------------------------------------------------------------
+.onboarding-page {
+  padding: 10px 0;
+}
+
+.onboarding-page .saas-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 34, 74, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  padding: 24px 28px 20px;
+}
+
+@media (max-width: 600px) {
+  .onboarding-page .saas-card {
+    padding: 18px 16px;
+  }
+}
+
+// Filters on the left; a primary action (e.g. "New") is pushed to the right.
+.saas-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+
+  > .primary-green-btn {
+    margin-left: auto;
+  }
+}
+
+.primary-green-btn {
+  background: #0057e7;
+  color: #ffffff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 87, 231, 0.25);
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: #0045b5;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(0, 87, 231, 0.35);
+  }
+}
+
+// ---- Table ----------------------------------------------------------------------
+.table-responsive {
+  overflow-x: auto;
+}
+
+.saas-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th.mat-mdc-header-cell,
+  th {
+    background-color: #e6f7f0;
+    color: #1e293b;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  td.mat-mdc-cell,
+  td {
+    color: #475569;
+    font-size: 13.5px;
+    padding: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+  }
+
+  .font-semibold {
+    font-weight: 700;
+    color: #0f224a;
+  }
+
+  .font-medium {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .table-row {
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+
+  // Actions column hugs its buttons and sits on the right. Placed after the
+  // th/td rules with matching specificity so it wins over `text-align: left`.
+  th.actions-header,
+  td.actions-cell {
+    text-align: right;
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  .row-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    // Browsers give <button> ~6px side padding by default, which left only 16px
+    // for the 18px icon and clipped its right edge — so reset it.
+    padding: 0;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: #0d9488;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    & + .row-edit-btn {
+      margin-left: 4px;
+    }
+
+    mat-icon {
+      flex-shrink: 0;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover:not(:disabled) {
+      background: #e6f7f5;
+      color: #0b7d73;
+    }
+
+    &:disabled {
+      color: #cbd5e1;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ---- Status badges (inside list cards only) --------------------------------------
+.saas-card .status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+
+.saas-card {
+  .status-badge--success { background: #e6f7f5; color: #0d9488; }
+  .status-badge--warning { background: #fff7ed; color: #d97706; }
+  .status-badge--danger { background: #ffebf0; color: #e11d48; }
+  .status-badge--info { background: #f0f9ff; color: #0284c7; }
+  .status-badge--neutral { background: #f1f5f9; color: #64748b; }
+
+  // Older names still used by some screens.
+  .status-badge--active { background: #e6f7f5; color: #0d9488; }
+  .status-badge--pending { background: #fef3c7; color: #d97706; }
+  .status-badge--blocked { background: #ffebf0; color: #e11d48; }
+}
+
+// ---- Empty state ------------------------------------------------------------------
+.empty-state-wrapper {
+  width: 100%;
+}
+
+.empty-header-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.empty-state-body {
+  padding: 56px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-icon-circle {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: #eef6f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // Icon placed directly in the circle (no magnifier box).
+  > .icon-magnifier {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    color: #0f224a;
+  }
+}
+
+.icon-magnifier-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .icon-magnifier {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    color: #0f224a;
+  }
+
+  .mini-chart-bars {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 12px;
+
+    .bar {
+      width: 3px;
+      border-radius: 1px;
+    }
+
+    .bar--1 {
+      height: 10px;
+      background: #0d9488;
+    }
+
+    .bar--2 {
+      height: 6px;
+      background: #0f224a;
+    }
+  }
+}
+
+.empty-state-text {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f224a;
+}
+
+// ---- Pagination --------------------------------------------------------------------
+.saas-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 16px;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.pagination-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.pag-arrows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .pag-btn {
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &:not([disabled]) {
+      color: #475569;
+
+      &:hover {
+        color: #0f172a;
+      }
+    }
+  }
+}
+
+.pag-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: none;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+}
+
+.pag-number--active {
+  background: #0d9488;
+  color: #ffffff;
+
+  &:hover {
+    background: #0d9488;
+  }
+}

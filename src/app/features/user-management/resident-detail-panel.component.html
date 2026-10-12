@@ -1,0 +1,171 @@
+<div class="panel-backdrop" *ngIf="isOpen" (click)="closePanel.emit()"></div>
+
+<div class="side-panel-drawer" [class.side-panel-drawer--open]="isOpen">
+  @if (resident; as r) {
+    <!-- Header -->
+    <div class="panel-header">
+      <div class="identity">
+        <div class="avatar">{{ initials(r) }}</div>
+        <div class="identity__text">
+          <h2 class="panel-title">{{ name(r) }}</h2>
+          <div class="panel-subtitle">{{ r.residentId }} · Resident</div>
+        </div>
+        <span class="status-badge status-badge--{{ tone[r.status] }}">{{ r.status }}</span>
+      </div>
+      <button mat-icon-button type="button" class="close-btn" (click)="closePanel.emit()" aria-label="Close panel">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Account actions -->
+    <div class="action-bar">
+      @for (action of actions(r.status); track action) {
+        <button type="button" class="btn-action" [class.btn-action--danger]="meta[action].danger" (click)="run(r, action)">
+          <mat-icon>{{ meta[action].icon }}</mat-icon>
+          <span>{{ meta[action].label }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" class="tab" [class.tab--active]="tab === 'details'" [attr.aria-selected]="tab === 'details'" (click)="setTab('details')">
+        Details
+      </button>
+      <button type="button" role="tab" class="tab" [class.tab--active]="tab === 'activity'" [attr.aria-selected]="tab === 'activity'" (click)="setTab('activity')">
+        Activity
+      </button>
+    </div>
+
+    <div class="panel-body" #panelBody>
+      <!-- ============ DETAILS ============ -->
+      @if (tab === 'details') {
+      @if (r.status === 'Blocked') {
+        <div class="alert alert--danger">
+          <mat-icon>block</mat-icon>
+          <div>
+            <div class="alert__title">Blocked{{ r.blockedAt ? ' on ' + (r.blockedAt | date: 'dd-MMM-yy, h:mm a') : '' }}</div>
+            <div>{{ r.blockReason || 'This resident cannot use the app until unblocked.' }}</div>
+          </div>
+        </div>
+      }
+      @if (r.status === 'Inactive' && r.checkOutDate) {
+        <div class="alert alert--neutral">
+          <mat-icon>logout</mat-icon>
+          <div>Checked out on {{ r.checkOutDate | date: 'dd-MMM-yy' }}.</div>
+        </div>
+      }
+
+      <div class="info-cards">
+        <section class="info-card">
+          <div class="info-card__header">
+            <span class="info-card__icon"><mat-icon>person</mat-icon></span>
+            <h3 class="info-card__title">Personal</h3>
+          </div>
+          <dl class="detail-grid">
+            <div><dt>Resident ID</dt><dd>{{ r.residentId }}</dd></div>
+            <div><dt>Name</dt><dd>{{ name(r) }}</dd></div>
+            <div><dt>Gender</dt><dd>{{ r.gender }}</dd></div>
+            <div><dt>Email</dt><dd><a [href]="'mailto:' + r.email">{{ r.email }}</a></dd></div>
+            <div><dt>Mobile</dt><dd>{{ r.mobileCode }} {{ r.mobile }}</dd></div>
+          </dl>
+        </section>
+
+        <section class="info-card">
+          <div class="info-card__header">
+            <span class="info-card__icon"><mat-icon>apartment</mat-icon></span>
+            <h3 class="info-card__title">Stay</h3>
+          </div>
+          <dl class="detail-grid">
+            <div><dt>Hostel</dt><dd>{{ r.hostelName }}</dd></div>
+            <div><dt>Hostel ID</dt><dd>{{ r.hostelId }}</dd></div>
+            <div><dt>Room / Bed</dt><dd>Room {{ r.roomNo }} · Bed {{ r.bedNo }}</dd></div>
+            <div><dt>Check-in Date</dt><dd>{{ r.checkInDate | date: 'dd-MMM-yy' }}</dd></div>
+            <div><dt>Check-out Date</dt><dd>{{ r.checkOutDate ? (r.checkOutDate | date: 'dd-MMM-yy') : '—' }}</dd></div>
+          </dl>
+        </section>
+
+        <section class="info-card">
+          <div class="info-card__header">
+            <span class="info-card__icon"><mat-icon>badge</mat-icon></span>
+            <h3 class="info-card__title">Account</h3>
+          </div>
+          <dl class="detail-grid">
+            <div><dt>Role</dt><dd>Resident</dd></div>
+            <div><dt>Status</dt><dd>{{ r.status }}</dd></div>
+            <div><dt>Last Login</dt><dd>{{ r.lastLogin ? (r.lastLogin | date: 'dd-MMM-yy, h:mm a') : 'Never' }}</dd></div>
+          </dl>
+        </section>
+
+        <section class="info-card">
+          <div class="info-card__header">
+            <span class="info-card__icon"><mat-icon>family_restroom</mat-icon></span>
+            <h3 class="info-card__title">Guardian</h3>
+          </div>
+          <dl class="detail-grid">
+            <div><dt>Name</dt><dd>{{ r.guardianName }}</dd></div>
+            <div><dt>Mobile</dt><dd>{{ r.mobileCode }} {{ r.guardianMobile }}</dd></div>
+          </dl>
+        </section>
+      </div>
+      }
+
+      <!-- ============ ACTIVITY ============ -->
+      @if (tab === 'activity') {
+        @if (activity.length === 0) {
+          <div class="activity-empty">
+            <mat-icon>history_toggle_off</mat-icon>
+            <div class="activity-empty__title">No activity recorded yet</div>
+            <div class="activity-empty__hint">Resident-app sign-ins and account changes will appear here.</div>
+          </div>
+        } @else {
+          <!-- Timeline, one card per day -->
+          <div class="info-cards">
+            @for (day of activityDays; track day.label) {
+              <section class="info-card">
+                <div class="info-card__header">
+                  <span class="info-card__icon"><mat-icon>calendar_today</mat-icon></span>
+                  <h3 class="info-card__title">{{ day.label }}</h3>
+                  <span class="day-count">{{ day.items.length }} {{ day.items.length === 1 ? 'event' : 'events' }}</span>
+                </div>
+
+                <ol class="timeline">
+                  @for (item of day.items; track $index) {
+                    <li class="timeline__item">
+                      <span class="timeline__dot timeline__dot--{{ item.tone }}"><mat-icon>{{ item.icon }}</mat-icon></span>
+                      <div class="timeline__body">
+                        <div class="timeline__top">
+                          <span class="timeline__title">{{ item.title }}</span>
+                          <time class="timeline__time" [attr.datetime]="item.timestamp">{{ item.timestamp | date: 'h:mm a' }}</time>
+                        </div>
+
+                        @if (item.kind === 'login' || item.kind === 'logout') {
+                          <div class="timeline__chips">
+                            @if (item.duration) {
+                              <span class="chip chip--duration"><mat-icon>schedule</mat-icon>Session {{ item.duration }}</span>
+                            }
+                            <span class="chip"><mat-icon>{{ deviceIcon(item.device ?? '') }}</mat-icon>{{ item.device }}</span>
+                            <span class="chip chip--mono"><mat-icon>language</mat-icon>{{ item.ip }}</span>
+                          </div>
+                        } @else {
+                          <div class="timeline__by">by <strong>{{ item.by }}</strong></div>
+                          @if (item.changes?.length) {
+                            <ul class="timeline__changes">
+                              @for (c of item.changes; track $index) {
+                                <li>{{ c }}</li>
+                              }
+                            </ul>
+                          }
+                        }
+                      </div>
+                    </li>
+                  }
+                </ol>
+              </section>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

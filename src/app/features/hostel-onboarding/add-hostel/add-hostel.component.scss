@@ -1,0 +1,316 @@
+.wizard-page {
+  padding: 10px 0;
+}
+
+.wizard-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 34, 74, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  padding: 20px 28px 28px;
+}
+
+// Toolbar: Back to List (left) — Next / Create Hostel (right).
+.wizard-card__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.wizard-card__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: end;
+}
+
+.wizard-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: #0f172a;
+  }
+}
+
+.wizard-stepper {
+  background: transparent;
+
+  ::ng-deep {
+    .mat-horizontal-stepper-header-container {
+      margin-bottom: 20px;
+    }
+
+    .mat-horizontal-stepper-header {
+      // Clickable: a linear stepper always allows navigating back to an
+      // already-completed step (only skipping AHEAD past an invalid step is
+      // blocked), which is now this wizard's only way back — the per-step
+      // back button was removed in favor of the single top toolbar.
+      height: 64px;
+    }
+
+    .mat-step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .mat-step-label-selected {
+      color: #0057e7;
+      font-weight: 700;
+    }
+
+    .mat-step-icon {
+      background-color: #e2e8f0;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .mat-step-icon-selected {
+      background-color: #0057e7;
+      color: #ffffff;
+    }
+
+    .mat-step-icon-state-done {
+      background-color: #0d9488;
+      color: #ffffff;
+    }
+
+    .mat-stepper-horizontal-line {
+      margin: 0 -8px;
+      border-top-color: #e2e8f0;
+    }
+  }
+}
+
+// Next Step Pill Button (matching Login/Onboarding primary blue theme)
+.next-step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #0057e7;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 87, 231, 0.25);
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: #0045b5;
+    box-shadow: 0 6px 18px rgba(0, 87, 231, 0.35);
+    transform: translateY(-1px);
+  }
+}
+
+// ---- Compact field sizing — fields sit side by side, packed to their own
+// medium width instead of stretched into equal wide thirds (which left
+// large dead gaps once .field-group below capped each field's width). ----
+::ng-deep {
+  .step-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 320px)) !important;
+    gap: 16px 20px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  // Plain label above a clean bordered box (no floating mat-label) — shared
+  // across every step so field markup only needs to add `.field-label`.
+  .field-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .required-mark {
+    color: #ef4444;
+    margin-left: 2px;
+  }
+
+  .wizard-stepper .mat-mdc-text-field-wrapper {
+    height: 44px !important;
+    border-radius: 8px !important;
+    background-color: #ffffff !important;
+  }
+
+  .wizard-stepper .mat-mdc-form-field-flex {
+    height: 42px !important;
+    align-items: center !important;
+  }
+
+  .wizard-stepper .mat-mdc-form-field-infix {
+    padding: 6px 0 !important;
+    min-height: 0 !important;
+    border-top: none !important;
+  }
+
+  .wizard-stepper .mat-mdc-form-field-subscript-wrapper {
+    margin-top: 2px;
+  }
+
+  .wizard-stepper .mdc-notched-outline__leading,
+  .wizard-stepper .mdc-notched-outline__notch,
+  .wizard-stepper .mdc-notched-outline__trailing {
+    border-color: #cbd5e1 !important;
+  }
+}
+
+.wizard-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &--primary {
+    background: #0057e7;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(0, 87, 231, 0.25);
+
+    &:hover:not([disabled]) {
+      background: #0045b5;
+      box-shadow: 0 8px 22px rgba(0, 87, 231, 0.35);
+    }
+
+    &[disabled] {
+      background: #e2e8f0;
+      color: #94a3b8;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+  }
+
+  &--secondary {
+    background: #f1f5f9;
+    color: #475569;
+
+    &:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+  }
+
+  &--stroked {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+
+    &:hover {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+  }
+}
+
+// Success state
+.wizard-success {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 34, 74, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  padding: 48px 32px;
+  text-align: center;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.wizard-success__icon {
+  color: #0d9488;
+  margin-bottom: 12px;
+
+  mat-icon {
+    font-size: 56px;
+    width: 56px;
+    height: 56px;
+  }
+}
+
+.wizard-success__title {
+  margin: 0 0 24px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f224a;
+}
+
+.wizard-success__details {
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+}
+
+.wizard-success__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 13.5px;
+
+  span {
+    color: #64748b;
+  }
+
+  strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  & + & {
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+.wizard-success__status {
+  color: #0d9488 !important;
+}
+
+.wizard-success__actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}

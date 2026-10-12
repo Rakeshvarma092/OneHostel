@@ -1,0 +1,93 @@
+<div class="wizard-page">
+  @if (!created) {
+    <div class="wizard-card">
+      <div class="wizard-card__toolbar">
+        <button type="button" class="wizard-back-link" (click)="onBackToList()">
+          <mat-icon>arrow_back</mat-icon>
+          Back to List
+        </button>
+
+        <div class="wizard-card__toolbar-actions">
+          @if (!isEditMode) {
+            <button type="button" class="wizard-btn wizard-btn--stroked" (click)="onSaveDraft()">Save Draft</button>
+          }
+          @if (isLastStep) {
+            <button type="button" class="wizard-btn wizard-btn--primary" [disabled]="submitting" (click)="onCreateHostel()">
+              {{ submitting ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update' : 'Submit') }}
+            </button>
+          } @else {
+            <button type="button" class="next-step-pill" (click)="onToolbarNext()">
+              Next
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          }
+        </div>
+      </div>
+
+      <mat-stepper [linear]="true" #stepper class="wizard-stepper">
+        <mat-step [stepControl]="hostelInfoGroup" label="Hostel Information">
+          <app-step-hostel-info [formGroup]="hostelInfoGroup"></app-step-hostel-info>
+        </mat-step>
+
+        <mat-step [stepControl]="addressGroup" label="Address">
+          <app-step-address [formGroup]="addressGroup"></app-step-address>
+        </mat-step>
+
+        <mat-step [stepControl]="capacityGroup" label="Hostel Capacity">
+          <app-step-capacity [formGroup]="capacityGroup"></app-step-capacity>
+        </mat-step>
+
+        <mat-step [stepControl]="facilitiesGroup" label="Facilities">
+          <app-step-facilities [formGroup]="facilitiesGroup"></app-step-facilities>
+        </mat-step>
+
+        <mat-step [stepControl]="adminGroup" label="Hostel Admin">
+          <app-step-admin [formGroup]="adminGroup" (regenerate)="regeneratePassword()"></app-step-admin>
+        </mat-step>
+
+        <mat-step [stepControl]="subscriptionGroup" label="Subscription">
+          <app-step-subscription [formGroup]="subscriptionGroup"></app-step-subscription>
+        </mat-step>
+
+        <mat-step label="Confirmation">
+          <app-step-confirmation [value]="formValue"></app-step-confirmation>
+        </mat-step>
+      </mat-stepper>
+    </div>
+  } @else {
+    <div class="wizard-success">
+      <div class="wizard-success__icon">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <h2 class="wizard-success__title">
+        {{ isEditMode ? 'Hostel Updated Successfully' : 'Hostel Created Successfully' }}
+      </h2>
+
+      <div class="wizard-success__details">
+        <div class="wizard-success__row">
+          <span>Hostel ID</span>
+          <strong>{{ createdHostelId }}</strong>
+        </div>
+        <div class="wizard-success__row">
+          <span>Admin Username</span>
+          <strong>{{ formValue.admin.username }}</strong>
+        </div>
+        <div class="wizard-success__row">
+          <span>Subscription</span>
+          <strong>{{ formValue.subscription.plan }}</strong>
+        </div>
+        <div class="wizard-success__row">
+          <span>Status</span>
+          <strong class="wizard-success__status">Active</strong>
+        </div>
+      </div>
+
+      <div class="wizard-success__actions">
+        <button type="button" class="wizard-btn wizard-btn--stroked" (click)="onSendCredentials()">
+          Send Credentials
+        </button>
+        <button type="button" class="wizard-btn wizard-btn--primary" (click)="onBackToList()">Back to List</button>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,46 @@
+// =============================================================================
+// ANGULAR MATERIAL THEME
+// Wires the palettes from _colors.scss into Material's theming system.
+// Only this file (and _colors.scss) should ever call mat.* theming mixins.
+// =============================================================================
+@use '@angular/material' as mat;
+@use 'colors' as colors;
+
+@include mat.core();
+
+// Angular Material 17+ exposes the legacy M2 theming API under an `m2-` prefix
+// (mat.m2-define-palette, mat.m2-red-palette, ...) to make room for the newer M3 system.
+$one-hostel-primary: mat.m2-define-palette(colors.$one-hostel-primary-palette);
+$one-hostel-accent: mat.m2-define-palette(colors.$one-hostel-accent-palette);
+$one-hostel-warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+$one-hostel-typography: mat.m2-define-typography-config(
+  $font-family: '\'Inter\', \'Roboto\', "Helvetica Neue", sans-serif',
+);
+
+$one-hostel-light-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $one-hostel-primary,
+    accent: $one-hostel-accent,
+    warn: $one-hostel-warn,
+  ),
+  typography: $one-hostel-typography,
+  density: 0,
+));
+
+// Dark theme reuses the same palettes so brand colors stay consistent.
+$one-hostel-dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $one-hostel-primary,
+    accent: $one-hostel-accent,
+    warn: $one-hostel-warn,
+  ),
+  typography: $one-hostel-typography,
+  density: 0,
+));
+
+@include mat.all-component-themes($one-hostel-light-theme);
+
+.dark-theme {
+  @include mat.all-component-colors($one-hostel-dark-theme);
+}
