@@ -117,7 +117,7 @@
             <mat-icon class="notif-menu__item-icon">{{ notification.icon }}</mat-icon>
             <div class="notif-menu__item-body">
               <div class="notif-menu__item-title">{{ notification.title }}</div>
-              <div class="notif-menu__item-time">{{ notification.time }}</div>
+              <div class="notif-menu__item-time">{{ relativeTime(notification.timestamp) }}</div>
             </div>
             @if (notification.unread) {
               <span class="notif-menu__item-dot"></span>

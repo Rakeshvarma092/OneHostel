@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -14,6 +14,7 @@ import {
   MatAutocompleteSelectedEvent,
   MatAutocompleteTrigger,
 } from '@angular/material/autocomplete';
+import { AppNotification, NotificationService, relativeTime } from '../../../core/services/notification.service';
 
 export interface AppUser {
   name: string;
@@ -47,14 +48,6 @@ interface LabelPart {
 const RECENT_KEY = 'onehostel_recent_searches';
 const MAX_RECENT = 4;
 const GROUP_ORDER: SearchGroup[] = ['Recent', 'Quick Actions', 'Pages', 'Account'];
-
-interface AppNotification {
-  id: number;
-  icon: string;
-  title: string;
-  time: string;
-  unread: boolean;
-}
 
 /**
  * Presentational (dumb) component: no services, no routing decisions.
@@ -125,11 +118,13 @@ export class AppHeaderComponent {
 
   private recentRoutes: string[] = this.readRecent();
 
-  notifications: AppNotification[] = [
-    { id: 1, icon: 'domain_add', title: 'New hostel "Grand Stay Hostel" was onboarded', time: '5 min ago', unread: true },
-    { id: 2, icon: 'person_add', title: 'A new admin account was created', time: '2 hours ago', unread: true },
-    { id: 3, icon: 'info', title: 'Scheduled maintenance completed successfully', time: 'Yesterday', unread: true },
-  ];
+  /** Shared with the dashboard's Recent Notifications card. */
+  private readonly notificationService = inject(NotificationService);
+  readonly relativeTime = relativeTime;
+
+  get notifications(): AppNotification[] {
+    return this.notificationService.notifications;
+  }
 
   get searchTerm(): string {
     return this.searchControl.value.trim().toLowerCase();
@@ -239,7 +234,7 @@ export class AppHeaderComponent {
   }
 
   get unreadCount(): number {
-    return this.notifications.filter((n) => n.unread).length;
+    return this.notificationService.unreadCount;
   }
 
   onSearchSelect(event: MatAutocompleteSelectedEvent): void {
@@ -256,7 +251,7 @@ export class AppHeaderComponent {
   };
 
   markAllRead(): void {
-    this.notifications = this.notifications.map((n) => ({ ...n, unread: false }));
+    this.notificationService.markAllRead();
   }
 
   isFullscreen = false;

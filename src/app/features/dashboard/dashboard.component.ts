@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -15,16 +15,23 @@ import { AdminService } from '../admin-management/admin.service';
 import { AuditLogService } from '../../core/services/audit-log.service';
 import { AuditEvent, AuditLog } from '../../core/models/audit.models';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
+import { AuthService } from '../../core/services/auth.service';
+import { AppNotification, NotificationService, relativeTime } from '../../core/services/notification.service';
 
 const ALL = 'All';
 const DAY_MS = 86_400_000;
 const EXPIRING_WINDOW_DAYS = 30;
 const RECENT_ACTIVITY_LIMIT = 8;
+const RECENT_NOTIFICATION_LIMIT = 5;
 
 type CardFormat = 'count' | 'inr';
 
+/** Icon colour for a stat tile (visual only). */
+type CardTone = 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'teal';
+
 interface SummaryCard {
   label: string;
+  tone?: CardTone;
   value: number;
   format: CardFormat;
   icon: string;
@@ -39,6 +46,33 @@ interface CardGroup {
   scope: 'today' | 'period';
   cards: SummaryCard[];
 }
+
+/** One bar in "Occupancy by Hostel". */
+interface HostelOccupancy {
+  name: string;
+  occupied: number;
+  beds: number;
+  /** 0–100 */
+  pct: number;
+}
+
+interface QuickAction {
+  label: string;
+  icon: string;
+  route: string;
+  /** The primary action gets the dashed "+" tile. */
+  primary?: boolean;
+}
+
+/** Shortcuts to the most common SuperAdmin tasks. */
+const QUICK_ACTIONS: QuickAction[] = [
+  { label: 'Onboard Hostel', icon: 'add', route: '/hostel-onboarding/new', primary: true },
+  { label: 'Create Template', icon: 'post_add', route: '/communication-templates/new' },
+  { label: 'Subscription Plans', icon: 'card_membership', route: '/subscription-plans' },
+  { label: 'Admin Management', icon: 'manage_accounts', route: '/admins' },
+  { label: 'Payments', icon: 'payments', route: '/subscription-payments' },
+  { label: 'Reports', icon: 'bar_chart', route: '/reports' },
+];
 
 interface ActivityRow {
   timestamp: string;
@@ -121,10 +155,48 @@ export class DashboardComponent {
   readonly statuses = ['Active', 'Inactive'];
   readonly expiringWindowDays = EXPIRING_WINDOW_DAYS;
 
+  readonly quickActions = QUICK_ACTIONS;
+  readonly relativeTime = relativeTime;
+  readonly today = new Date();
+
   constructor(
     private adminService: AdminService,
     private auditLog: AuditLogService,
+    private auth: AuthService,
+    private notificationService: NotificationService,
+    private router: Router,
   ) {}
+
+  // ---- Greeting ----
+
+  /** First name of the signed-in SuperAdmin, for "Hello, Rakesh". */
+  get firstName(): string {
+    return (this.auth.currentUser?.name || 'Super Admin').trim().split(/s+/)[0];
+  }
+
+  get greeting(): string {
+    const h = new Date().getHours();
+    return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  }
+
+  // ---- Recent notifications (same feed as the header bell) ----
+
+  get recentNotifications(): AppNotification[] {
+    return this.notificationService.notifications.slice(0, RECENT_NOTIFICATION_LIMIT);
+  }
+
+  get unreadNotifications(): number {
+    return this.notificationService.unreadCount;
+  }
+
+  markAllNotificationsRead(): void {
+    this.notificationService.markAllRead();
+  }
+
+  openNotification(n: AppNotification): void {
+    this.notificationService.markRead(n.id);
+    if (n.route) this.router.navigateByUrl(n.route);
+  }
 
   get hasFilters(): boolean {
     return !!(
@@ -202,33 +274,57 @@ export class DashboardComponent {
         title: 'Hostels',
         scope: 'today',
         cards: [
-          { label: 'Total Hostels', value: hostels.length, format: 'count', icon: 'apartment', sub: `${plural(new Set(hostels.map((h) => h.city)).size, 'city')}`, route: '/hostel-onboarding' },
-          { label: 'Active Hostels', value: active, format: 'count', icon: 'check_circle', sub: hostels.length ? `${Math.round((active / hostels.length) * 100)}% of hostels` : '—', route: '/reports' },
-          { label: 'Inactive Hostels', value: hostels.length - active, format: 'count', icon: 'pause_circle', sub: 'Suspended or cancelled', route: '/reports' },
-          { label: 'Total Hostel Admins', value: admins.length, format: 'count', icon: 'manage_accounts', sub: `${activeAdmins} active`, route: '/admins' },
+          { label: 'Total Hostels', tone: 'blue', value: hostels.length, format: 'count', icon: 'apartment', sub: `${plural(new Set(hostels.map((h) => h.city)).size, 'city')}`, route: '/hostel-onboarding' },
+          { label: 'Active Hostels', tone: 'green', value: active, format: 'count', icon: 'check_circle', sub: hostels.length ? `${Math.round((active / hostels.length) * 100)}% of hostels` : '—', route: '/reports' },
+          { label: 'Inactive Hostels', tone: 'amber', value: hostels.length - active, format: 'count', icon: 'pause_circle', sub: 'Suspended or cancelled', route: '/reports' },
+          { label: 'Total Hostel Admins', tone: 'purple', value: admins.length, format: 'count', icon: 'manage_accounts', sub: `${activeAdmins} active`, route: '/admins' },
         ],
       },
       {
         title: 'Residents & Beds',
         scope: 'today',
         cards: [
-          { label: 'Total Residents', value: current + checkedOut, format: 'count', icon: 'groups', sub: `${current.toLocaleString('en-IN')} currently staying`, route: '/reports' },
-          { label: 'Total Beds', value: beds, format: 'count', icon: 'bed', sub: `Across ${plural(hostels.length, 'hostel')}`, route: '/reports' },
-          { label: 'Occupied Beds', value: current, format: 'count', icon: 'hotel', sub: `${occupancy}% occupancy`, route: '/reports' },
-          { label: 'Available Beds', value: beds - current, format: 'count', icon: 'event_available', sub: `${100 - occupancy}% free`, route: '/reports' },
+          { label: 'Total Residents', tone: 'teal', value: current + checkedOut, format: 'count', icon: 'groups', sub: `${current.toLocaleString('en-IN')} currently staying`, route: '/reports' },
+          { label: 'Total Beds', tone: 'blue', value: beds, format: 'count', icon: 'bed', sub: `Across ${plural(hostels.length, 'hostel')}`, route: '/reports' },
+          { label: 'Occupied Beds', tone: 'green', value: current, format: 'count', icon: 'hotel', sub: `${occupancy}% occupancy`, route: '/reports' },
+          { label: 'Available Beds', tone: 'amber', value: beds - current, format: 'count', icon: 'event_available', sub: `${100 - occupancy}% free`, route: '/reports' },
         ],
       },
       {
         title: 'Subscriptions & Revenue',
         scope: 'period',
         cards: [
-          { label: 'Active Subscriptions', value: activeSubs, format: 'count', icon: 'card_membership', sub: trialSubs ? `+ ${plural(trialSubs, 'trial')}` : 'Paid plans', route: '/subscription-payments' },
-          { label: 'Expiring Subscriptions', value: expiring, format: 'count', icon: 'event_busy', sub: `In the next ${EXPIRING_WINDOW_DAYS} days`, route: '/subscription-payments' },
-          { label: 'Total Revenue', value: revenue, format: 'inr', icon: 'account_balance_wallet', sub: `${plural(paid.length, 'paid transaction')}, incl. GST`, route: '/reports' },
-          { label: 'Pending Payments', value: pendingAmount, format: 'inr', icon: 'pending_actions', sub: pending.length ? `${plural(pending.length, 'invoice')} awaiting payment` : 'Nothing pending', route: '/subscription-payments' },
+          { label: 'Active Subscriptions', tone: 'green', value: activeSubs, format: 'count', icon: 'card_membership', sub: trialSubs ? `+ ${plural(trialSubs, 'trial')}` : 'Paid plans', route: '/subscription-payments' },
+          { label: 'Expiring Subscriptions', tone: 'red', value: expiring, format: 'count', icon: 'event_busy', sub: `In the next ${EXPIRING_WINDOW_DAYS} days`, route: '/subscription-payments' },
+          { label: 'Total Revenue', tone: 'teal', value: revenue, format: 'inr', icon: 'account_balance_wallet', sub: `${plural(paid.length, 'paid transaction')}, incl. GST`, route: '/reports' },
+          { label: 'Pending Payments', tone: 'amber', value: pendingAmount, format: 'inr', icon: 'pending_actions', sub: pending.length ? `${plural(pending.length, 'invoice')} awaiting payment` : 'Nothing pending', route: '/subscription-payments' },
         ],
       },
     ];
+  }
+
+  // ---- Bed occupancy (charts) ----
+
+  /** Occupied vs total beds across the filtered hostels (same numbers as the Residents & Beds tiles). */
+  get bedStats(): { occupied: number; beds: number; available: number; pct: number } {
+    const occupied = this.hostels.reduce((s, h) => s + h.activeResidents, 0);
+    const beds = this.hostels.reduce((s, h) => s + h.totalBeds, 0);
+    return { occupied, beds, available: beds - occupied, pct: beds ? Math.round((occupied / beds) * 100) : 0 };
+  }
+
+  /** Donut ring geometry: circumference for r = 52. */
+  readonly ringCircumference = 2 * Math.PI * 52;
+
+  /** Per-hostel occupancy, fullest first. */
+  get hostelOccupancy(): HostelOccupancy[] {
+    return this.hostels
+      .map((h) => ({
+        name: h.hostelName,
+        occupied: h.activeResidents,
+        beds: h.totalBeds,
+        pct: h.totalBeds ? Math.round((h.activeResidents / h.totalBeds) * 100) : 0,
+      }))
+      .sort((a, b) => b.pct - a.pct);
   }
 
   /** Live subscriptions whose expiry falls within the window, soonest first. */

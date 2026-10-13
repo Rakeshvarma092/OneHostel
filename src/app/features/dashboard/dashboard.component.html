@@ -1,4 +1,13 @@
 <div class="dashboard">
+  <!-- Greeting -->
+  <div class="greeting">
+    <div>
+      <h1 class="greeting__title">{{ greeting }}, {{ firstName }} <span aria-hidden="true">👋</span></h1>
+      <p class="greeting__subtitle">Here's what's happening across your hostels today.</p>
+    </div>
+    <span class="greeting__date"><mat-icon>calendar_today</mat-icon>{{ today | date: 'EEE, d MMM y' }}</span>
+  </div>
+
   <!-- Filters -->
   <div class="dash-card filter-bar">
     <mat-form-field appearance="outline" class="filter-field filter-field--date">
@@ -53,7 +62,7 @@
     }
   </div>
 
-  <!-- Summary cards -->
+  <!-- Summary tiles -->
   @for (group of groups; track group.title) {
     <section class="card-group" [attr.aria-label]="group.title">
       <div class="card-group__head">
@@ -70,10 +79,11 @@
       </div>
       <div class="stat-grid">
         @for (card of group.cards; track card.label) {
-          <a class="stat-card" [routerLink]="card.route" [queryParams]="card.queryParams">
+          <a class="stat-card stat-card--{{ card.tone ?? 'teal' }}" [routerLink]="card.route" [queryParams]="card.queryParams">
             <div class="stat-card__top">
-              <span class="stat-card__label">{{ card.label }}</span>
               <span class="stat-card__icon"><mat-icon>{{ card.icon }}</mat-icon></span>
+              <span class="stat-card__label">{{ card.label }}</span>
+              <span class="stat-card__go" aria-hidden="true"><mat-icon>arrow_forward</mat-icon></span>
             </div>
             <div class="stat-card__value">
               {{ card.format === 'inr' ? (card.value | inrCurrency) : (card.value | number) }}
@@ -85,48 +95,60 @@
     </section>
   }
 
-  <!-- Activity + attention -->
+  <!-- Main grid -->
   <div class="dash-row">
-    <div class="dash-card activity-card">
+    <div class="main-col">
+    <!-- Quick actions -->
+    <div class="dash-card">
       <div class="dash-card__header">
-        <h2 class="dash-card__title">Recent Activity</h2>
-        <a routerLink="/audit-logs" class="view-all">View all <mat-icon>arrow_forward</mat-icon></a>
+        <h2 class="dash-card__title">Quick Actions</h2>
       </div>
-
-      <div class="table-responsive">
-        <table class="dash-table">
-          <thead>
-            <tr>
-              <th>Date &amp; Time</th>
-              <th>Activity</th>
-              <th>Hostel</th>
-              <th>Performed By</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of recentActivity; track $index) {
-              <tr [matTooltip]="row.details ?? ''" matTooltipPosition="above">
-                <td class="nowrap">{{ row.timestamp | date: 'dd-MMM-yy HH:mm' }}</td>
-                <td class="font-medium">{{ row.activity }}</td>
-                <td [class.muted]="row.hostel === '—'">{{ row.hostel }}</td>
-                <td>{{ row.user }}</td>
-                <td>
-                  <span class="badge-status" [class.badge-status--active]="row.status === 'Success'" [class.badge-status--blocked]="row.status === 'Failed'">
-                    {{ row.status }}
-                  </span>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="empty-cell">No activity for the selected filters</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <div class="quick-grid">
+        @for (q of quickActions; track q.route) {
+          <a class="quick-tile" [class.quick-tile--primary]="q.primary" [routerLink]="q.route">
+            <span class="quick-tile__icon"><mat-icon>{{ q.icon }}</mat-icon></span>
+            <span class="quick-tile__label">{{ q.label }}</span>
+          </a>
+        }
       </div>
     </div>
 
+    <!-- Occupancy by hostel -->
+    <div class="dash-card chart-card">
+      <div class="dash-card__header">
+        <div>
+          <h2 class="dash-card__title">Occupancy by Hostel</h2>
+          <p class="dash-card__subtitle">Occupied beds out of total beds, as of today</p>
+        </div>
+        <a routerLink="/reports" class="view-all">Reports <mat-icon>arrow_forward</mat-icon></a>
+      </div>
+
+      @if (hostelOccupancy.length) {
+        <ul class="bar-list" aria-label="Occupancy by hostel">
+          @for (h of hostelOccupancy; track h.name) {
+            <li
+              class="bar-row"
+              tabindex="0"
+              [matTooltip]="h.name + ': ' + (h.occupied | number) + ' of ' + (h.beds | number) + ' beds occupied (' + h.pct + '%)'"
+              matTooltipPosition="above"
+            >
+              <span class="bar-row__name">{{ h.name }}</span>
+              <span class="bar-row__track" aria-hidden="true">
+                <span class="bar-row__fill" [style.width.%]="h.pct"></span>
+              </span>
+              <span class="bar-row__value">
+                <strong>{{ h.pct }}%</strong>
+                <span class="bar-row__count">{{ h.occupied | number }} / {{ h.beds | number }}</span>
+              </span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="chart-empty">No hostels match the selected filters</div>
+      }
+    </div>
+
+    <!-- Needs attention -->
     <div class="dash-card attention-card">
       <div class="dash-card__header">
         <h2 class="dash-card__title">Needs Attention</h2>
@@ -139,8 +161,8 @@
         <ul class="attention-list">
           @for (item of attention; track item.text) {
             <li>
-              <a class="attention-item" [routerLink]="item.route" [queryParams]="item.queryParams">
-                <span class="attention-item__icon attention-item__icon--{{ item.tone }}"><mat-icon>{{ item.icon }}</mat-icon></span>
+              <a class="attention-item attention-item--{{ item.tone }}" [routerLink]="item.route" [queryParams]="item.queryParams">
+                <span class="attention-item__icon"><mat-icon>{{ item.icon }}</mat-icon></span>
                 <span class="attention-item__text">{{ item.text }}</span>
                 <mat-icon class="attention-item__chev">chevron_right</mat-icon>
               </a>
@@ -153,6 +175,127 @@
           <span>All clear — nothing needs your attention.</span>
         </div>
       }
+    </div>
+    </div>
+
+    <div class="side-col">
+      <!-- Bed occupancy donut -->
+      <div class="dash-card donut-card">
+        <div class="dash-card__header">
+          <h2 class="dash-card__title">Bed Occupancy</h2>
+        </div>
+
+        <div class="donut">
+          <svg viewBox="0 0 120 120" class="donut__svg" role="img"
+               [attr.aria-label]="bedStats.pct + '% of beds occupied: ' + bedStats.occupied + ' of ' + bedStats.beds">
+            <circle class="donut__track" cx="60" cy="60" r="52" />
+            <circle
+              class="donut__value"
+              cx="60"
+              cy="60"
+              r="52"
+              [attr.stroke-dasharray]="(ringCircumference * bedStats.pct) / 100 + ' ' + ringCircumference"
+            />
+          </svg>
+          <div class="donut__center">
+            <span class="donut__pct">{{ bedStats.pct }}%</span>
+            <span class="donut__caption">occupied</span>
+          </div>
+        </div>
+
+        <ul class="donut-legend">
+          <li>
+            <span class="donut-legend__swatch donut-legend__swatch--occupied"></span>
+            Occupied <strong>{{ bedStats.occupied | number }}</strong>
+          </li>
+          <li>
+            <span class="donut-legend__swatch donut-legend__swatch--available"></span>
+            Available <strong>{{ bedStats.available | number }}</strong>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Recent notifications (same feed as the header bell) -->
+      <div class="dash-card notif-card">
+        <div class="dash-card__header">
+          <div class="notif-card__title">
+            <h2 class="dash-card__title">Recent Notifications</h2>
+            @if (unreadNotifications) {
+              <span class="count-pill count-pill--blue">{{ unreadNotifications }} new</span>
+            }
+          </div>
+          @if (unreadNotifications) {
+            <button type="button" class="link-btn" (click)="markAllNotificationsRead()">Mark all read</button>
+          }
+        </div>
+
+        @if (recentNotifications.length) {
+          <ul class="notif-list">
+            @for (n of recentNotifications; track n.id) {
+              <li>
+                <button type="button" class="notif-item" [class.notif-item--unread]="n.unread" (click)="openNotification(n)">
+                  <span class="notif-item__icon notif-item__icon--{{ n.tone }}"><mat-icon>{{ n.icon }}</mat-icon></span>
+                  <span class="notif-item__body">
+                    <span class="notif-item__meta">
+                      <time [attr.datetime]="n.timestamp">{{ n.timestamp | date: 'h:mm a' }}</time>
+                      <span aria-hidden="true">·</span>
+                      {{ relativeTime(n.timestamp) }}
+                    </span>
+                    <span class="notif-item__title">{{ n.title }}</span>
+                    <span class="notif-item__desc">{{ n.description }}</span>
+                  </span>
+                  @if (n.unread) {
+                    <span class="notif-item__dot" aria-label="Unread"></span>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="all-clear"><mat-icon>notifications_off</mat-icon><span>No notifications yet.</span></div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="dash-card activity-card">
+    <div class="dash-card__header">
+      <h2 class="dash-card__title">Recent Activity</h2>
+      <a routerLink="/audit-logs" class="view-all">View all <mat-icon>arrow_forward</mat-icon></a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Date &amp; Time</th>
+            <th>Activity</th>
+            <th>Hostel</th>
+            <th>Performed By</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of recentActivity; track $index) {
+            <tr [matTooltip]="row.details ?? ''" matTooltipPosition="above">
+              <td class="nowrap">{{ row.timestamp | date: 'dd-MMM-yy, h:mm a' }}</td>
+              <td class="font-medium">{{ row.activity }}</td>
+              <td [class.muted]="row.hostel === '—'">{{ row.hostel }}</td>
+              <td>{{ row.user }}</td>
+              <td>
+                <span class="badge-status" [class.badge-status--active]="row.status === 'Success'" [class.badge-status--blocked]="row.status === 'Failed'">
+                  {{ row.status }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-cell">No activity for the selected filters</td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
